@@ -49,4 +49,11 @@ For the other two, it is kind of hard to train them.
 | 2      | 0.671    |
 | 3      | 0.698    |
 | 4      | 0.714    |
+| 5      | 0.723    |
 |        |          |
+
+# some experience
+
+1. When batch_size is small, accuracy changes rapidly(up and down)
+2. should manually change learning rate sometimes
+3. could try big rate when acc does not change often
