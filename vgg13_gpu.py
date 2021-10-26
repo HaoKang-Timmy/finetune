@@ -38,3 +38,37 @@ print(net)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
  # net into cuda
 print(device)
+
+for param in net.parameters():
+    param.requires_grad = False
+net.classifier[-1] = nn.Linear(512,10)
+for param in net.classifier.parameters():
+    param.requires_grad = True
+net.to(device)
+
+
+# define ooptimizer and loss function
+loss_function = nn.CrossEntropyLoss()
+optimizer = optim.Adam(net.parameters(), lr=0.001)
+# training
+best_acc = 0.0
+save_path = './vgg11.pth'
+for epoch in range(1):
+    # training
+    net.train()
+    running_loss = 0.0
+    for step, data in enumerate(trainloader, start=0):
+        images, labels = data
+        optimizer.zero_grad()
+        logits = net(images.to(device))
+        loss = loss_function(logits, labels.to(device))
+        loss.backward()
+        optimizer.step()
+
+        # print statistics
+        running_loss += loss.item()
+        # print train process
+        rate = (step + 1) / len(trainloader)
+        a = "*" * int(rate * 50)
+        b = "." * int((1 - rate) * 50)
+        print("\rtrain loss: {:^3.0f}%[{}->{}]{:.4f}".format(int(rate * 100), a, b, loss), end="")
