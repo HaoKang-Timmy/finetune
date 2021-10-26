@@ -38,13 +38,13 @@ net = torchvision.models.alexnet(pretrained=True)
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
  # net into cuda
-print(device)
+print(net)
 
 
 
 for param in net.parameters():
     param.requires_grad = False
-net.classifier[-1] = nn.Linear(512,10)
+net.classifier[-1] = nn.Linear(4096,10)
 for param in net.classifier.parameters():
     param.requires_grad = True
 net.to(device)

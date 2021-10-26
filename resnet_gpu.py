@@ -37,7 +37,7 @@ net = torchvision.models.resnet34(pretrained=True)
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
  # net into cuda
-print(device)
+print(net)
 
 
 for param in net.parameters():
