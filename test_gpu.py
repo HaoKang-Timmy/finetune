@@ -42,8 +42,8 @@ print(net)
 
 for param in net.parameters():
     param.requires_grad = False
-net.fc = nn.Linear(512,10)
-for param in net.fc.parameters():
+net.classifier = nn.Linear(512,10)
+for param in net.classifier.parameters():
     param.requires_grad = True
 net.to(device)
 
