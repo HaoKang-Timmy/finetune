@@ -43,5 +43,5 @@ For the other two, it is kind of hard to train them.
 1. When batch_size is small, accuracy changes rapidly(up and down)
 2. should manually change learning rate sometimes
 3. could try big rate when acc does not change often
-4. # another resources(trained 50 epochs but not fintuned)
+# another resources(trained 50 epochs but not fintuned)
 ![image](https://user-images.githubusercontent.com/60107867/139537346-7ce9b714-812f-4cd6-9a03-d3219cccef90.png)
