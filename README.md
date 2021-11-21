@@ -10,6 +10,16 @@ typora-copy-images-to: ../fintune
 2. Dataset: food101,bird200(CUB), car196, cifar10, cifar100
 3. pixel: 400*400
 
+
+
+# usage
+
+```
+python3 mobilev2_imagenet.py path --device cuda --batchsize 64 --pretrain 1 -l 0.001
+```
+
+ 
+
 # results
 
 | Dataset  | Val_acc%(top1)             | Test_acc%(top1) |
