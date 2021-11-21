@@ -1,3 +1,7 @@
+---
+typora-copy-images-to: ../fintune
+---
+
 # report about fintune
 
 # settings
@@ -15,6 +19,10 @@
 | Food101  | 80.124(Image net bench=83) |                 |
 | Cifar100 | 71.242(to be done)         | 70.411          |
 | CUB200   | 72.141                     |                 |
+
+# curve
+
+![image-20211121141842034](./image-20211121141842034.png)
 
 # techniques
 
