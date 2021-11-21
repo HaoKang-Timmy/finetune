@@ -79,7 +79,10 @@ optional arguments:
   --gamma GAMMA         decay rate at scheduler
 ```
 
- 
+# example
+```
+python train.py -a mobilenet_v2 --pretrained --dist-url 'tcp://127.0.0.1:1234' --dist-backend 'nccl' --multiprocessing-distributed --world-size 1 --rank 0  --seed 1 -t Imagenet /dataset/imagenet
+```
 
 # results
 
