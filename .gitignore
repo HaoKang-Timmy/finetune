@@ -1,2 +1,3 @@
 *.pyc
+*.txt
 ./train/dataset/__pycache__

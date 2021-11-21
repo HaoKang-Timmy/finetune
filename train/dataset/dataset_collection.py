@@ -23,6 +23,9 @@ class DatasetCollection():
                 self.compose['val']
             )
             return train_dataset,val_dataset
+        elif(self.type == 'CUB200'):
+            pass
+
 
 
 
