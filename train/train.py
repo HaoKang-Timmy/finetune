@@ -75,9 +75,9 @@ parser.add_argument('--multiprocessing-distributed', action='store_true',
                          'N processes per node, which has N GPUs. This is the '
                          'fastest way to use PyTorch for either single node or '
                          'multi node data parallel training')
-parser.add_argument('type', '--dataset-type', default='Imagenet',
+parser.add_argument('-type', '--dataset-type', default='Imagenet',
                     help='choose a dataset to train')
-
+parser.add_argument('--gamma', default=0.9, type=float, help='decay rate at scheduler')
 
 best_acc1 = 0
 
@@ -165,7 +165,7 @@ def main_worker(gpu, ngpus_per_node, args):
     optimizer = torch.optim.Adam(model.parameters(), args.lr,
                                  weight_decay=args.weight_decay)
     criterion = nn.CrossEntropyLoss().cuda(args.gpu)
-
+    scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=args.gamma)
     # optionally resume from a checkpoint
     if args.resume:
         if os.path.isfile(args.resume):
@@ -202,12 +202,13 @@ def main_worker(gpu, ngpus_per_node, args):
         normalize,
     ])
     compose_val = transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            normalize,
-        ])
-    dataset_collection = DatasetCollection(args.type, args.data, compose_train, compose_val)
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        normalize,
+    ])
+    dataset_collection = DatasetCollection(
+        args.type, args.data, compose_train, compose_val)
     train_dataset, val_dataset = dataset_collection.init()
 
     if args.distributed:
@@ -228,16 +229,14 @@ def main_worker(gpu, ngpus_per_node, args):
 
     if args.evaluate:
         validate(val_loader, model, criterion, args)
-        return    
+        return
 
     for epoch in range(args.start_epoch, args.epochs):
         if args.distributed:
             train_sampler.set_epoch(epoch)
-        adjust_learning_rate(optimizer, epoch, args)
-
         # train for one epoch
         train(train_loader, model, criterion, optimizer, epoch, args)
-
+        adjust_learning_rate(scheduler)
         # evaluate on validation set
         acc1 = validate(val_loader, model, criterion, args)
 
@@ -340,6 +339,7 @@ def validate(val_loader, model, criterion, args):
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
+
     def __init__(self, name, fmt=':f'):
         self.name = name
         self.fmt = fmt
@@ -361,6 +361,7 @@ class AverageMeter(object):
         fmtstr = '{name} {val' + self.fmt + '} ({avg' + self.fmt + '})'
         return fmtstr.format(**self.__dict__)
 
+
 class ProgressMeter(object):
     def __init__(self, num_batches, meters, prefix=""):
         self.batch_fmtstr = self._get_batch_fmtstr(num_batches)
@@ -377,11 +378,13 @@ class ProgressMeter(object):
         fmt = '{:' + str(num_digits) + 'd}'
         return '[' + fmt + '/' + fmt.format(num_batches) + ']'
 
-def adjust_learning_rate(optimizer, epoch, args):
-    """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
-    lr = args.lr * (0.1 ** (epoch // 30))
-    for param_group in optimizer.param_groups:
-        param_group['lr'] = lr
+
+def adjust_learning_rate(scheduler):
+    # """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
+    # lr = args.lr * (0.1 ** (epoch // 30))
+    # for param_group in optimizer.param_groups:
+    #     param_group['lr'] = lr
+    scheduler.step()
 
 
 def accuracy(output, target, topk=(1,)):
