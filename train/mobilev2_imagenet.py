@@ -1,5 +1,5 @@
 from torchvision import transforms
-from dataset import Mydataset
+from dataset import DatasetCollection
 import torchvision
 import torchvision.transforms as transforms
 import argparse
@@ -30,7 +30,7 @@ compose_val = transforms.Compose([
         transforms.ToTensor(),
         normalize,
     ])
-mydataset = Mydataset(type,dr,compose_train,compose_val)
+mydataset = DatasetCollection(type,dr,compose_train,compose_val)
 train,val = mydataset.init()
 train_loader = torch.utils.data.DataLoader(
     train, batch_size=args.batchsize, shuffle=True)
@@ -50,6 +50,8 @@ if args.fintune_mode == 'deep':
         param.requires_grad = True
 if args.device!= 'cpu':
     net = nn.DataParallel(net).to(device)
+loss_function = nn.CrossEntropyLoss()
+save_path = '/path'
 def train():
     best_acc = 0.68
     #optimizer = torch.optim.Adam([{'params':classifier_params},{'params':low_params,'lr':lr_init*0.4},{'params':deep_params,'lr':lr_init*0.1}],lr=lr_init)
@@ -76,8 +78,6 @@ def train():
             b = "." * int((1 - rate) * 50)
             print(
                 "\rtrain loss: {:^3.0f}%[{}->{}]{:.4f}".format(int(rate * 100), a, b, loss), end="")
-            file.write(str(loss.item()))
-            file.write('\n')
         scheduler.step()
         if i in [0,2,4,6,8,10,12,14,16,18]:
             print(i)

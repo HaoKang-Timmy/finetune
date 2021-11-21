@@ -3,7 +3,7 @@ import os
 import torchvision.datasets as datasets
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as transforms
-class Mydataset():
+class DatasetCollection():
     def __init__(self,type,path,compose_train,compose_val):
         self.type = type
         self.path = path

@@ -32,7 +32,7 @@ python3 mobilev2_imagenet.py path --device cuda --batchsize 64 --pretrain 1 -l 0
 
 # curve
 
-![image-20211121141842034](./image-20211121141842034.png)
+![image-20211121141842034](./pic/image-20211121141842034.png)
 
 # techniques
 
