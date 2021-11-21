@@ -1,5 +1,5 @@
 from torchvision import transforms
-from dataset import DatasetCollection
+from dataset.dataset_collection import DatasetCollection
 import torchvision
 import torchvision.transforms as transforms
 import argparse
