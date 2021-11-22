@@ -8,6 +8,7 @@ typora-copy-images-to: ../fintune
 
 1. Model: All models in torchvision(pertained in torchvision)
 2. Dataset: food101,bird200(CUB), car196, cifar10, cifar100,Imagenet
+3. currently support mobilenet_v2 and all datasets above
 
 # structure
 ```
