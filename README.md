@@ -81,6 +81,10 @@ using pretrained mobilenet_v2 training on Imagenet dataset
 
 ![image-20211123001648617](./pic/image-20211123001648617.png)
 
+## CUB200:
+
+![image-20211123005817637](./pic/image-20211123005817637.png)
+
 
 
 1. Learning rate decay
