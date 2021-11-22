@@ -1,3 +1,7 @@
+---
+typora-copy-images-to: ../fintune
+---
+
 # report about fintune
 
 # settings
@@ -51,6 +55,14 @@ python train.py -a mobilenet_v2 --pretrained --dist-url 'tcp://127.0.0.1:1234' -
 
 ![image-20211121141842034](./pic/image-20211121141842034.png)
 
+
+
+# tensorboard
+
+
+
+![image-20211122133952845](./pic/image-20211122133952845.png)
+
 # techniques
 
 1. Learning rate decay
@@ -90,7 +102,6 @@ for fold,(train_idx,test_idx) in enumerate(kfold.split(dataset)):
 ```
 optimizer = torch.optim.Adam([{'params':classifier_params},{'params':low_params,'lr':lr_init*0.6},{'params':deep_params,'lr':lr_init*0.4}],lr=lr_init)
 ```
-
 
 
 
