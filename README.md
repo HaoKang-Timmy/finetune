@@ -106,7 +106,8 @@ optimizer = torch.optim.Adam([{'params':classifier_params},{'params':low_params,
 
 # more details
 1. support more specific training method 
-fintune:\
+
+fintune:
 ```
 for param in model.parameters():
     param.requires_grad = False
@@ -115,7 +116,7 @@ for param in model.classifier.parameters():
 optimizer = torch.optim.Adam(model.parameters(), args.lr,
                               weight_decay=args.weight_decay)
 ```
-low:\
+low:
 ```
 classifier_map = list(map(id, model.classifier.parameters()))
 low_map = list(map(id, model.features[-5:]))
@@ -127,7 +128,7 @@ deep_params = filter(lambda p: id(
 optimizer = torch.optim.Adam([{'params': classifier_params}, {
                               'params': low_params, 'lr': args.lr*0.6}, {'params': deep_params, 'lr': args.lr*0.4}], lr=args.lr)
 ```
-deep: \
+deep: 
 ```
 for param in model.parameters():
     param.requires_grad = True
