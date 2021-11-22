@@ -136,7 +136,13 @@ def main_worker(gpu, ngpus_per_node, args):
     else:
         print("=> creating model '{}'".format(args.arch))
         model = models.__dict__[args.arch]()
-
+    #still could just work on mobilenet_v2
+    if args.dataset_type == 'CUB200':
+        model.classifier[-1] = nn.Linear(1280,200)
+    elif args.dataset_type == 'CIFAR10':
+        model.classifier[-1] = nn.Linear(1280,10)
+    elif args.dataset_type == 'CIFAR100':
+        model.classifier[-1] = nn.Linear(1280,100)
     if args.train_method == 'fintune':
         for param in model.parameters():
             param.requires_grad = False
