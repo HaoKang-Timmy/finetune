@@ -1,11 +1,10 @@
 import argparse
 import os
 import random
-import shutil
-import time
 import warnings
 from dataset.dataset_collection import DatasetCollection
 from vision.vision_class import AverageMeter, ProgressMeter
+from utils import train,validate,adjust_learning_rate,save_checkpoint
 import torch
 import torch.nn as nn
 import torch.nn.parallel
@@ -17,12 +16,10 @@ import torch.utils.data
 import torch.utils.data.distributed
 import torchvision.transforms as transforms
 import torchvision.models as models
-
-
+from torch.utils.tensorboard import SummaryWriter
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("__")
                      and callable(models.__dict__[name]))
-print(model_names)
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
 
 parser.add_argument('data', metavar='DIR',
@@ -78,11 +75,12 @@ parser.add_argument('--multiprocessing-distributed', action='store_true',
 parser.add_argument('-type', '--dataset-type', default='Imagenet',
                     help='choose a dataset to train')
 parser.add_argument('--gamma', default=0.9, type=float, help='decay rate at scheduler')
-
+parser.add_argument('--tensorboard',action='store_true', help='set up a sesion at tensorboard')
 best_acc1 = 0
 
 
 def main():
+    
     args = parser.parse_args()
     if args.seed is not None:
         random.seed(args.seed)
@@ -161,7 +159,11 @@ def main_worker(gpu, ngpus_per_node, args):
             model.cuda()
         else:
             model = torch.nn.DataParallel(model).cuda()
-
+    if not args.multiprocessing_distributed or (args.multiprocessing_distributed
+            and args.rank % ngpus_per_node == 0):
+            if args.tensorboard:
+                print('create tensorboard session')
+                writer = SummaryWriter()
     optimizer = torch.optim.Adam(model.parameters(), args.lr,
                                  weight_decay=args.weight_decay)
     criterion = nn.CrossEntropyLoss().cuda(args.gpu)
@@ -190,8 +192,6 @@ def main_worker(gpu, ngpus_per_node, args):
 
     cudnn.benchmark = True
 
-    traindir = os.path.join(args.data, 'train')
-    valdir = os.path.join(args.data, 'val')
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
 
@@ -208,7 +208,7 @@ def main_worker(gpu, ngpus_per_node, args):
         normalize,
     ])
     dataset_collection = DatasetCollection(
-        args.type, args.data, compose_train, compose_val)
+        args.dataset_type, args.data, compose_train, compose_val)
     train_dataset, val_dataset = dataset_collection.init()
 
     if args.distributed:
@@ -230,12 +230,15 @@ def main_worker(gpu, ngpus_per_node, args):
     if args.evaluate:
         validate(val_loader, model, criterion, args)
         return
-
     for epoch in range(args.start_epoch, args.epochs):
         if args.distributed:
             train_sampler.set_epoch(epoch)
         # train for one epoch
-        train(train_loader, model, criterion, optimizer, epoch, args)
+        
+        if not args.multiprocessing_distributed or (args.multiprocessing_distributed
+                and args.rank % ngpus_per_node == 0):
+            train(train_loader, model, criterion, optimizer, epoch, args,ngpus_per_node,writer = writer) 
+        train(train_loader, model, criterion, optimizer, epoch, args,ngpus_per_node)
         adjust_learning_rate(scheduler)
         # evaluate on validation set
         acc1 = validate(val_loader, model, criterion, args)
@@ -254,126 +257,6 @@ def main_worker(gpu, ngpus_per_node, args):
             }, is_best)
 
 
-def train(train_loader, model, criterion, optimizer, epoch, args):
-    batch_time = AverageMeter('Time', ':6.3f')
-    data_time = AverageMeter('Data', ':6.3f')
-    losses = AverageMeter('Loss', ':.4e')
-    top1 = AverageMeter('Acc@1', ':6.2f')
-    top5 = AverageMeter('Acc@5', ':6.2f')
-    progress = ProgressMeter(
-        len(train_loader),
-        [batch_time, data_time, losses, top1, top5],
-        prefix="Epoch: [{}]".format(epoch))
-
-    # switch to train mode
-    model.train()
-
-    end = time.time()
-    for i, (images, target) in enumerate(train_loader):
-        # measure data loading time
-        data_time.update(time.time() - end)
-
-        if args.gpu is not None:
-            images = images.cuda(args.gpu, non_blocking=True)
-        if torch.cuda.is_available():
-            target = target.cuda(args.gpu, non_blocking=True)
-
-        # compute output
-        output = model(images)
-        loss = criterion(output, target)
-
-        # measure accuracy and record loss
-        acc1, acc5 = accuracy(output, target, topk=(1, 5))
-        losses.update(loss.item(), images.size(0))
-        top1.update(acc1[0], images.size(0))
-        top5.update(acc5[0], images.size(0))
-
-        # compute gradient and do SGD step
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-
-        # measure elapsed time
-        batch_time.update(time.time() - end)
-        end = time.time()
-
-        if i % args.print_freq == 0:
-            progress.display(i)
-
-
-def validate(val_loader, model, criterion, args):
-    batch_time = AverageMeter('Time', ':6.3f')
-    losses = AverageMeter('Loss', ':.4e')
-    top1 = AverageMeter('Acc@1', ':6.2f')
-    top5 = AverageMeter('Acc@5', ':6.2f')
-    progress = ProgressMeter(
-        len(val_loader),
-        [batch_time, losses, top1, top5],
-        prefix='Test: ')
-
-    # switch to evaluate mode
-    model.eval()
-
-    with torch.no_grad():
-        end = time.time()
-        for i, (images, target) in enumerate(val_loader):
-            if args.gpu is not None:
-                images = images.cuda(args.gpu, non_blocking=True)
-            if torch.cuda.is_available():
-                target = target.cuda(args.gpu, non_blocking=True)
-
-            # compute output
-            output = model(images)
-            loss = criterion(output, target)
-
-            # measure accuracy and record loss
-            acc1, acc5 = accuracy(output, target, topk=(1, 5))
-            losses.update(loss.item(), images.size(0))
-            top1.update(acc1[0], images.size(0))
-            top5.update(acc5[0], images.size(0))
-
-            # measure elapsed time
-            batch_time.update(time.time() - end)
-            end = time.time()
-
-            if i % args.print_freq == 0:
-                progress.display(i)
-
-        # TODO: this should also be done with the ProgressMeter
-        print(' * Acc@1 {top1.avg:.3f} Acc@5 {top5.avg:.3f}'
-              .format(top1=top1, top5=top5))
-
-    return top1.avg
-
-
-
-def adjust_learning_rate(scheduler):
-    # """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
-    # lr = args.lr * (0.1 ** (epoch // 30))
-    # for param_group in optimizer.param_groups:
-    #     param_group['lr'] = lr
-    scheduler.step()
-
-
-def accuracy(output, target, topk=(1,)):
-    """Computes the accuracy over the k top predictions for the specified values of k"""
-    with torch.no_grad():
-        maxk = max(topk)
-        batch_size = target.size(0)
-
-        _, pred = output.topk(maxk, 1, True, True)
-        pred = pred.t()
-        correct = pred.eq(target.view(1, -1).expand_as(pred))
-
-        res = []
-        for k in topk:
-            correct_k = correct[:k].reshape(-1).float().sum(0, keepdim=True)
-            res.append(correct_k.mul_(100.0 / batch_size))
-        return res
-def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
-    torch.save(state, filename)
-    if is_best:
-        shutil.copyfile(filename, 'model_best.pth.tar')
 
 if __name__ == '__main__':
     main()
