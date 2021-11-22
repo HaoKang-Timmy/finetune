@@ -32,13 +32,13 @@ usage: train.py [-h] [-a ARCH] [-j N] [--epochs N] [--start-epoch N] [-b N]
                 [--pretrained] [--world-size WORLD_SIZE] [--rank RANK]
                 [--dist-url DIST_URL] [--dist-backend DIST_BACKEND]
                 [--seed SEED] [--gpu GPU] [--multiprocessing-distributed]
-                [-t DATASET_TYPE] [--gamma GAMMA]
+                [-type DATASET_TYPE] [--gamma GAMMA] [--tensorboard]
                 DIR
 ```
 
 # example
 ```
-python train.py -a mobilenet_v2 --pretrained --dist-url 'tcp://127.0.0.1:1234' --dist-backend 'nccl' --multiprocessing-distributed --world-size 1 --rank 0  --seed 1 -t Imagenet /dataset/imagenet
+python train.py -a mobilenet_v2 --pretrained --dist-url 'tcp://127.0.0.1:1234' --dist-backend 'nccl' --multiprocessing-distributed --world-size 1 --rank 0  --seed 1 -t Imagenet --tensorboard /dataset/imagenet
 ```
 
 # results
@@ -47,17 +47,17 @@ python train.py -a mobilenet_v2 --pretrained --dist-url 'tcp://127.0.0.1:1234' -
 | -------- | -------------------------- | --------------- |
 | Cifar10  | 96.224                     | 95.781          |
 | Car196   | 87.295                     |                 |
-| Food101  | 80.124(Image net bench=83) |                 |
+| Food101  | 80.124 |                 |
 | Cifar100 | 71.242(to be done)         | 70.411          |
 | CUB200   | 72.141                     |                 |
 | Imagenet | 71.095                     |                 |
-# curve
+# curve(imagenet)
 
 ![image-20211121141842034](./pic/image-20211121141842034.png)
 
 
 
-# tensorboard
+# tensorboard(example)
 
 
 
