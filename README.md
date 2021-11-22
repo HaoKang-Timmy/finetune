@@ -22,7 +22,7 @@ typora-copy-images-to: ../fintune
     └── vision
         └── vision_class.py
 ```
-vision_class.py for some helper functions and visualizition
+vision_class.py for some helper functions and visualizition\
 dataset_collecton.py for generate datasets for food101,bird200(CUB), car196, cifar10, cifar100,Imagenet
 # usage
 
