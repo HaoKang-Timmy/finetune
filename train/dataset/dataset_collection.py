@@ -62,6 +62,10 @@ class DatasetCollection():
             train_dataset = datasets.CIFAR10(root=self.path,train= True,transform= self.compose['train'])
             val_dataset = datasets.CIFAR10(root=self.path,train= False,transform= self.compose['val'])
             return train_dataset,val_dataset
+        elif(self.type == 'CIFAR100'):
+            train_dataset = datasets.CIFAR100(root=self.path,train= True,transform= self.compose['train'])
+            val_dataset = datasets.CIFAR100(root=self.path,train= False,transform= self.compose['val'])
+            return train_dataset,val_dataset
 
 
 

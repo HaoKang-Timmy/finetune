@@ -2,12 +2,24 @@
 
 # settings
 
-1. Model: mobile_v2(pertained in torchvision)
-2. Dataset: food101,bird200(CUB), car196, cifar10, cifar100
-3. pixel: 400*400
+1. Model: All models in torchvision(pertained in torchvision)
+2. Dataset: food101,bird200(CUB), car196, cifar10, cifar100,Imagenet
 
-
-
+# structure
+```
+.
+├── README.md
+├── pic
+│   └── image-20211121141842034.png
+└── train
+    ├── dataset
+    │   └── dataset_collection.py
+    ├── train.py
+    └── vision
+        └── vision_class.py
+```
+vision_class.py for some helper functions and visualizition
+dataset_collecton.py for generate datasets for food101,bird200(CUB), car196, cifar10, cifar100,Imagenet
 # usage
 
 ```
