@@ -31,12 +31,12 @@ dataset_collecton.py for generate datasets for food101,bird200(CUB), car196, cif
 ```
 python ./train/train.py -a mobilenet_v2 --pretrained --dist-url 'tcp://127.0.0.1:1234' --dist-backend 'nccl' --multiprocessing-distributed --world-size 1 --rank 0  --seed 1 -t Imagenet --tensorboard [path_to_Imagenet_dataset]
 ```
-## Multiple nodes:
-### Node 0:
+## multiple nodes:
+### node 0:
 ```
 python main.py -a mobilenet_v2 --pretrained --dist-url 'tcp://127.0.0.1:1234' --dist-backend 'nccl' --multiprocessing-distributed --world-size 2 --rank 0 [imagenet-folder with train and val folders]
 ```
-### Node 1:
+### node 1:
 ```
 python main.py -a mobilenet_v2 --pretrained --dist-url 'tcp://127.0.0.1:1234' --dist-backend 'nccl' --multiprocessing-distributed --world-size 2 --rank 1 [imagenet-folder with train and val folders]
 ```
