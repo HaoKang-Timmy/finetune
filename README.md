@@ -76,7 +76,7 @@ scheduler.step()
 
 2. weight decay
 
-```
+```python
 optimizer = torch.optim.Adam(net.module.parameters(),lr = lr_init,weight_decay=weight_decay)
 ```
 
@@ -84,7 +84,7 @@ prevent overfit in car and birds but not that useful in food
 
 3. K-folder(should have test datas)
 
-```
+```python
 for fold,(train_idx,test_idx) in enumerate(kfold.split(dataset)):
   print('------------fold no---------{}----------------------'.format(fold))
   train_subsampler = torch.utils.data.SubsetRandomSampler(train_idx)
@@ -100,7 +100,7 @@ for fold,(train_idx,test_idx) in enumerate(kfold.split(dataset)):
 
 4. different learning rate on each layer
 
-```
+```python
 optimizer = torch.optim.Adam([{'params':classifier_params},{'params':low_params,'lr':lr_init*0.6},{'params':deep_params,'lr':lr_init*0.4}],lr=lr_init)
 ```
 
@@ -108,7 +108,7 @@ optimizer = torch.optim.Adam([{'params':classifier_params},{'params':low_params,
 1. support more specific training method 
 
 fintune:
-```
+```python
 for param in model.parameters():
     param.requires_grad = False
 for param in model.classifier.parameters():
@@ -117,7 +117,7 @@ optimizer = torch.optim.Adam(model.parameters(), args.lr,
                               weight_decay=args.weight_decay)
 ```
 low:
-```
+```python
 classifier_map = list(map(id, model.classifier.parameters()))
 low_map = list(map(id, model.features[-5:]))
 classifier_params = filter(lambda p: id(
@@ -129,7 +129,7 @@ optimizer = torch.optim.Adam([{'params': classifier_params}, {
                               'params': low_params, 'lr': args.lr*0.6}, {'params': deep_params, 'lr': args.lr*0.4}], lr=args.lr)
 ```
 deep: 
-```
+```python
 for param in model.parameters():
     param.requires_grad = True
     optimizer = torch.optim.Adam(model.parameters(), args.lr,
