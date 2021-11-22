@@ -4,7 +4,7 @@ import random
 import warnings
 from dataset.dataset_collection import DatasetCollection
 from vision.vision_class import AverageMeter, ProgressMeter
-from utils import train, validate, adjust_learning_rate, save_checkpoint
+from utils import train, validate, adjust_learning_rate, save_checkpoint,prepare_dataloader
 import torch
 import torch.nn as nn
 import torch.nn.parallel
@@ -235,25 +235,7 @@ def main_worker(gpu, ngpus_per_node, args):
         transforms.ToTensor(),
         normalize,
     ])
-    dataset_collection = DatasetCollection(
-        args.dataset_type, args.data, compose_train, compose_val)
-    train_dataset, val_dataset = dataset_collection.init()
-
-    if args.distributed:
-        train_sampler = torch.utils.data.distributed.DistributedSampler(
-            train_dataset)
-    else:
-        train_sampler = None
-
-    train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=args.batch_size, shuffle=(
-            train_sampler is None),
-        num_workers=args.workers, pin_memory=True, sampler=train_sampler)
-
-    val_loader = torch.utils.data.DataLoader(
-        val_dataset,
-        batch_size=args.batch_size, shuffle=False,
-        num_workers=args.workers, pin_memory=True)
+    train_sampler, train_loader, val_loader = prepare_dataloader(normalize,compose_train,compose_val,args)
 
     if args.evaluate:
         validate(val_loader, model, criterion, args)

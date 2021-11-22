@@ -2,6 +2,9 @@ import time
 import torch
 import shutil
 from vision.vision_class import AverageMeter, ProgressMeter
+from dataset.dataset_collection import DatasetCollection
+import torchvision.transforms as transforms
+import torch.utils.data.distributed
 def train(train_loader, model, criterion, optimizer, epoch, args,ngpus_per_node,writer = None):
     batch_time = AverageMeter('Time', ':6.3f')
     data_time = AverageMeter('Data', ':6.3f')
@@ -96,8 +99,42 @@ def validate(val_loader, model, criterion, args):
 
     return top1.avg
 
+def prepare_dataloader(normalize,compose_train,compose_val,args):
+    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                     std=[0.229, 0.224, 0.225])
 
+    compose_train = transforms.Compose([
+        transforms.RandomResizedCrop(224),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        normalize,
+    ])
+    compose_val = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        normalize,
+    ])
+    dataset_collection = DatasetCollection(
+        args.dataset_type, args.data, compose_train, compose_val)
+    train_dataset, val_dataset = dataset_collection.init()
 
+    if args.distributed:
+        train_sampler = torch.utils.data.distributed.DistributedSampler(
+            train_dataset)
+    else:
+        train_sampler = None
+
+    train_loader = torch.utils.data.DataLoader(
+        train_dataset, batch_size=args.batch_size, shuffle=(
+            train_sampler is None),
+        num_workers=args.workers, pin_memory=True, sampler=train_sampler)
+
+    val_loader = torch.utils.data.DataLoader(
+        val_dataset,
+        batch_size=args.batch_size, shuffle=False,
+        num_workers=args.workers, pin_memory=True)
+    return train_sampler, train_loader, val_loader
 def adjust_learning_rate(scheduler):
     scheduler.step()
 
