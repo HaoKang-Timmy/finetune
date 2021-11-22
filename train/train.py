@@ -40,14 +40,14 @@ parser.add_argument('-b', '--batch-size', default=128, type=int,
                     help='mini-batch size (default: 256), this is the total '
                          'batch size of all GPUs on the current node when '
                          'using Data Parallel or Distributed Data Parallel')
-parser.add_argument('--lr', '--learning-rate', default=0.01, type=float,
+parser.add_argument('--lr', '--learning-rate', default=0.0004, type=float,
                     metavar='LR', help='initial learning rate', dest='lr')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M',
                     help='momentum')
-parser.add_argument('--wd', '--weight-decay', default=1e-4, type=float,
+parser.add_argument('--wd', '--weight-decay', default=0, type=float,
                     metavar='W', help='weight decay (default: 1e-4)',
                     dest='weight_decay')
-parser.add_argument('-p', '--print-freq', default=10, type=int,
+parser.add_argument('-p', '--print-freq', default=30, type=int,
                     metavar='N', help='print frequency (default: 10)')
 parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
@@ -218,7 +218,7 @@ def main_worker(gpu, ngpus_per_node, args):
                 # best_acc1 may be from a checkpoint from a different GPU
                 best_acc1 = best_acc1.to(args.gpu)
             model.load_state_dict(checkpoint['state_dict'])
-            optimizer.load_state_dict(checkpoint['optimizer'])
+            #optimizer.load_state_dict(checkpoint['optimizer'])
             print("=> loaded checkpoint '{}' (epoch {})"
                   .format(args.resume, checkpoint['epoch']))
         else:
@@ -251,16 +251,18 @@ def main_worker(gpu, ngpus_per_node, args):
             train_sampler.set_epoch(epoch)
         # train for one epoch
 
-        if not args.multiprocessing_distributed or (args.multiprocessing_distributed
-                                                    and args.rank % ngpus_per_node == 0):
-            train(train_loader, model, criterion, optimizer,
-                  epoch, args, ngpus_per_node, writer=writer)
-        train(train_loader, model, criterion,
+        # if not args.multiprocessing_distributed or (args.multiprocessing_distributed
+        #                                             and args.rank % ngpus_per_node == 0):
+        #     train(train_loader, model, criterion, optimizer,
+        #           epoch, args, ngpus_per_node, writer=writer)
+        acc1_train, loss_train = train(train_loader, model, criterion,
               optimizer, epoch, args, ngpus_per_node)
         adjust_learning_rate(scheduler)
         # evaluate on validation set
-        acc1 = validate(val_loader, model, criterion, args)
-
+        # if not args.multiprocessing_distributed or (args.multiprocessing_distributed
+        #                                             and args.rank % ngpus_per_node == 0):
+        #     acc1 = validate(val_loader, model, criterion, args,ngpus_per_node,writer=writer)
+        acc1,loss_val = validate(val_loader, model, criterion, args,ngpus_per_node)
         # remember best acc@1 and save checkpoint
         is_best = acc1 > best_acc1
         best_acc1 = max(acc1, best_acc1)
@@ -273,6 +275,12 @@ def main_worker(gpu, ngpus_per_node, args):
                 'best_acc1': best_acc1,
                 'optimizer': optimizer.state_dict(),
             }, is_best)
+            if args.tensorboard:
+                print(loss_train,acc1_train,loss_val,acc1)
+                writer.add_scalar('loss/train',loss_train,epoch)
+                writer.add_scalar('acc/train',acc1_train,epoch)
+                writer.add_scalar('loss/val',loss_val,epoch)
+                writer.add_scalar('acc/val',acc1,epoch)
 
 
 if __name__ == '__main__':

@@ -38,9 +38,10 @@ def train(train_loader, model, criterion, optimizer, epoch, args,ngpus_per_node,
         losses.update(loss.item(), images.size(0))
         top1.update(acc1[0], images.size(0))
         top5.update(acc5[0], images.size(0))
-        if not args.multiprocessing_distributed or (args.multiprocessing_distributed
-                and args.rank % ngpus_per_node == 0):
-            writer.add_scalar('Loss/train', losses.val, i)
+        # if not args.multiprocessing_distributed or (args.multiprocessing_distributed
+        #         and args.rank % ngpus_per_node == 0):
+        #     writer.add_scalar('Loss/train', losses.val, i)
+        #     writer.add_scalar('acc/train', top1.val, i)
 
         # compute gradient and do SGD step
         optimizer.zero_grad()
@@ -53,9 +54,10 @@ def train(train_loader, model, criterion, optimizer, epoch, args,ngpus_per_node,
 
         if i % args.print_freq == 0:
             progress.display(i)
+    return top1.avg, losses.avg
 
 
-def validate(val_loader, model, criterion, args):
+def validate(val_loader, model, criterion, args,ngpus_per_node,writer = None):
     batch_time = AverageMeter('Time', ':6.3f')
     losses = AverageMeter('Loss', ':.4e')
     top1 = AverageMeter('Acc@1', ':6.2f')
@@ -89,7 +91,10 @@ def validate(val_loader, model, criterion, args):
             # measure elapsed time
             batch_time.update(time.time() - end)
             end = time.time()
-
+            # if not args.multiprocessing_distributed or (args.multiprocessing_distributed
+            # and args.rank % ngpus_per_node == 0):
+            #     writer.add_scalar('Loss/val', losses.val, i)
+            #     writer.add_scalar('acc/val', top1.val, i)
             if i % args.print_freq == 0:
                 progress.display(i)
 
@@ -97,7 +102,7 @@ def validate(val_loader, model, criterion, args):
         print(' * Acc@1 {top1.avg:.3f} Acc@5 {top5.avg:.3f}'
               .format(top1=top1, top5=top5))
 
-    return top1.avg
+    return top1.avg,losses.avg
 
 def prepare_dataloader(normalize,compose_train,compose_val,args):
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
