@@ -14,11 +14,13 @@
 .
 ├── README.md
 ├── pic
-│   └── image-20211121141842034.png
+│   ├── image-20211121141842034.png
+│   └── image-20211122133952845.png
 └── train
     ├── dataset
     │   └── dataset_collection.py
     ├── train.py
+    ├── utils.py
     └── vision
         └── vision_class.py
 ```
@@ -47,6 +49,7 @@ usage: train.py [-h] [-a ARCH] [-j N] [--epochs N] [--start-epoch N] [-b N]
                 [--dist-url DIST_URL] [--dist-backend DIST_BACKEND]
                 [--seed SEED] [--gpu GPU] [--multiprocessing-distributed]
                 [-type DATASET_TYPE] [--gamma GAMMA] [--tensorboard]
+                [--train-method {deep,low,fintune}]
                 DIR
 ```
 
