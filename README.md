@@ -104,5 +104,34 @@ for fold,(train_idx,test_idx) in enumerate(kfold.split(dataset)):
 optimizer = torch.optim.Adam([{'params':classifier_params},{'params':low_params,'lr':lr_init*0.6},{'params':deep_params,'lr':lr_init*0.4}],lr=lr_init)
 ```
 
-
+# more details
+1. support more specific training method 
+fintune:\
+```
+for param in model.parameters():
+    param.requires_grad = False
+for param in model.classifier.parameters():
+    param.requires_grad = True
+optimizer = torch.optim.Adam(model.parameters(), args.lr,
+                              weight_decay=args.weight_decay)
+```
+low:\
+```
+classifier_map = list(map(id, model.classifier.parameters()))
+low_map = list(map(id, model.features[-5:]))
+classifier_params = filter(lambda p: id(
+    p) in classifier_map, model.parameters())
+low_params = filter(lambda p: id(p) in low_map, model.parameters())
+deep_params = filter(lambda p: id(
+    p) not in low_map+classifier_map, model.parameters())
+optimizer = torch.optim.Adam([{'params': classifier_params}, {
+                              'params': low_params, 'lr': args.lr*0.6}, {'params': deep_params, 'lr': args.lr*0.4}], lr=args.lr)
+```
+deep: \
+```
+for param in model.parameters():
+    param.requires_grad = True
+    optimizer = torch.optim.Adam(model.parameters(), args.lr,
+                                  weight_decay=args.weight_decay)
+```
 

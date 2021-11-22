@@ -4,7 +4,7 @@ import random
 import warnings
 from dataset.dataset_collection import DatasetCollection
 from vision.vision_class import AverageMeter, ProgressMeter
-from utils import train,validate,adjust_learning_rate,save_checkpoint
+from utils import train, validate, adjust_learning_rate, save_checkpoint
 import torch
 import torch.nn as nn
 import torch.nn.parallel
@@ -35,12 +35,12 @@ parser.add_argument('--epochs', default=90, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('-b', '--batch-size', default=256, type=int,
+parser.add_argument('-b', '--batch-size', default=128, type=int,
                     metavar='N',
                     help='mini-batch size (default: 256), this is the total '
                          'batch size of all GPUs on the current node when '
                          'using Data Parallel or Distributed Data Parallel')
-parser.add_argument('--lr', '--learning-rate', default=0.1, type=float,
+parser.add_argument('--lr', '--learning-rate', default=0.01, type=float,
                     metavar='LR', help='initial learning rate', dest='lr')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M',
                     help='momentum')
@@ -74,13 +74,17 @@ parser.add_argument('--multiprocessing-distributed', action='store_true',
                          'multi node data parallel training')
 parser.add_argument('-type', '--dataset-type', default='Imagenet',
                     help='choose a dataset to train')
-parser.add_argument('--gamma', default=0.9, type=float, help='decay rate at scheduler')
-parser.add_argument('--tensorboard',action='store_true', help='set up a sesion at tensorboard')
+parser.add_argument('--gamma', default=0.9, type=float,
+                    help='decay rate at scheduler')
+parser.add_argument('--tensorboard', action='store_true',
+                    help='set up a sesion at tensorboard')
+parser.add_argument('--train-method', choices=[
+                    'deep', 'low', 'fintune'], default='fintune', help='choose a training method')
 best_acc1 = 0
 
 
 def main():
-    
+
     args = parser.parse_args()
     if args.seed is not None:
         random.seed(args.seed)
@@ -132,6 +136,31 @@ def main_worker(gpu, ngpus_per_node, args):
     else:
         print("=> creating model '{}'".format(args.arch))
         model = models.__dict__[args.arch]()
+
+    if args.train_method == 'fintune':
+        for param in model.parameters():
+            param.requires_grad = False
+        for param in model.classifier.parameters():
+            param.requires_grad = True
+        optimizer = torch.optim.Adam(model.parameters(), args.lr,
+                                     weight_decay=args.weight_decay)
+    else:
+        if args.train_method == 'low':
+            classifier_map = list(map(id, model.classifier.parameters()))
+            low_map = list(map(id, model.features[-5:]))
+            classifier_params = filter(lambda p: id(
+                p) in classifier_map, model.parameters())
+            low_params = filter(lambda p: id(p) in low_map, model.parameters())
+            deep_params = filter(lambda p: id(
+                p) not in low_map+classifier_map, model.parameters())
+            optimizer = torch.optim.Adam([{'params': classifier_params}, {
+                                         'params': low_params, 'lr': args.lr*0.6}, {'params': deep_params, 'lr': args.lr*0.4}], lr=args.lr)
+        else:
+            for param in model.parameters():
+                param.requires_grad = True
+                optimizer = torch.optim.Adam(model.parameters(), args.lr,
+                                             weight_decay=args.weight_decay)
+
     if not torch.cuda.is_available():
         print('using CPU')
     elif args.distributed:
@@ -159,14 +188,14 @@ def main_worker(gpu, ngpus_per_node, args):
         else:
             model = torch.nn.DataParallel(model).cuda()
     if not args.multiprocessing_distributed or (args.multiprocessing_distributed
-            and args.rank % ngpus_per_node == 0):
-            if args.tensorboard:
-                print('create tensorboard session')
-                writer = SummaryWriter()
-    optimizer = torch.optim.Adam(model.parameters(), args.lr,
-                                 weight_decay=args.weight_decay)
+                                                and args.rank % ngpus_per_node == 0):
+        if args.tensorboard:
+            print('create tensorboard session')
+            writer = SummaryWriter()
+
     criterion = nn.CrossEntropyLoss().cuda(args.gpu)
-    scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=args.gamma)
+    scheduler = torch.optim.lr_scheduler.ExponentialLR(
+        optimizer, gamma=args.gamma)
     # optionally resume from a checkpoint
     if args.resume:
         if os.path.isfile(args.resume):
@@ -233,11 +262,13 @@ def main_worker(gpu, ngpus_per_node, args):
         if args.distributed:
             train_sampler.set_epoch(epoch)
         # train for one epoch
-        
+
         if not args.multiprocessing_distributed or (args.multiprocessing_distributed
-                and args.rank % ngpus_per_node == 0):
-            train(train_loader, model, criterion, optimizer, epoch, args,ngpus_per_node,writer = writer) 
-        train(train_loader, model, criterion, optimizer, epoch, args,ngpus_per_node)
+                                                    and args.rank % ngpus_per_node == 0):
+            train(train_loader, model, criterion, optimizer,
+                  epoch, args, ngpus_per_node, writer=writer)
+        train(train_loader, model, criterion,
+              optimizer, epoch, args, ngpus_per_node)
         adjust_learning_rate(scheduler)
         # evaluate on validation set
         acc1 = validate(val_loader, model, criterion, args)
@@ -246,15 +277,14 @@ def main_worker(gpu, ngpus_per_node, args):
         is_best = acc1 > best_acc1
         best_acc1 = max(acc1, best_acc1)
         if not args.multiprocessing_distributed or (args.multiprocessing_distributed
-                and args.rank % ngpus_per_node == 0):
+                                                    and args.rank % ngpus_per_node == 0):
             save_checkpoint({
                 'epoch': epoch + 1,
                 'arch': args.arch,
                 'state_dict': model.state_dict(),
                 'best_acc1': best_acc1,
-                'optimizer' : optimizer.state_dict(),
+                'optimizer': optimizer.state_dict(),
             }, is_best)
-
 
 
 if __name__ == '__main__':
