@@ -1,3 +1,7 @@
+---
+typora-copy-images-to: ../fintune
+---
+
 
 
 # report about fintune
@@ -73,9 +77,23 @@ using pretrained mobilenet_v2 training on Imagenet dataset
 
 # tensorboard(example)
 
+## Cifar10 train-loss:
+
+![image-20211122214330848](./pic/image-20211122214330848.png)
+
+## Cifar10 train-acc
+
+![image-20211122214618061](./pic/image-20211122214618061.png)
 
 
-![image-20211122133952845](./pic/image-20211122133952845.png)
+
+## cifar10 val-loss
+
+![image-20211122214534717](./pic/image-20211122214534717.png)
+
+## cifar10 val-acc
+
+![image-20211122214445921](./pic/image-20211122214445921.png)
 
 # techniques
 
