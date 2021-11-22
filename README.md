@@ -63,7 +63,7 @@ using pretrained mobilenet_v2 training on Imagenet dataset
 
 | Dataset  | Val_acc%(top1)             | Test_acc%(top1) |
 | -------- | -------------------------- | --------------- |
-| Cifar10  | 96.224                     | 95.781          |
+| Cifar10  | 95.11                 |           |
 | Car196   | 87.295                     |                 |
 | Food101  | 80.124 |                 |
 | Cifar100 | 71.242(to be done)         | 70.411          |
@@ -77,25 +77,11 @@ using pretrained mobilenet_v2 training on Imagenet dataset
 
 # tensorboard(example)
 
-## Cifar10 train-loss:
+## Cifar10 
 
-![image-20211122214330848](./pic/image-20211122214330848.png)
-
-## Cifar10 train-acc
-
-![image-20211122214618061](./pic/image-20211122214618061.png)
+![image-20211123001648617](./pic/image-20211123001648617.png)
 
 
-
-## cifar10 val-loss
-
-![image-20211122214534717](./pic/image-20211122214534717.png)
-
-## cifar10 val-acc
-
-![image-20211122214445921](./pic/image-20211122214445921.png)
-
-# techniques
 
 1. Learning rate decay
 
