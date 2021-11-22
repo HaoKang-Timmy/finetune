@@ -1,6 +1,4 @@
----
-typora-copy-images-to: ../fintune
----
+
 
 # report about fintune
 
