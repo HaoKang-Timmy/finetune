@@ -12,10 +12,6 @@
 # structure
 ```
 .
-├── README.md
-├── pic
-│   ├── image-20211121141842034.png
-│   └── image-20211122133952845.png
 └── train
     ├── dataset
     │   └── dataset_collection.py
