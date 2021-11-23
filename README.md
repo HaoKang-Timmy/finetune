@@ -1,3 +1,7 @@
+---
+typora-copy-images-to: ../fintune
+---
+
 
 
 
@@ -81,6 +85,10 @@ using pretrained mobilenet_v2 training on Imagenet dataset
 ## CUB200:
 
 ![image-20211123005817637](./pic/image-20211123005817637.png)
+
+## Imagenet
+
+![image-20211123184356725](./pic/image-20211123184356725.png)
 
 
 
