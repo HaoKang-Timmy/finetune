@@ -76,13 +76,25 @@ using pretrained mobilenet_v2 training on Imagenet dataset
 
 ## Cifar10 
 
+orange:only fintune classifier
+
+Red: fintune whole net work
+
 ![image-20211123001648617](./pic/image-20211123001648617.png)
 
 ## CUB200:
 
+blue:only fintune classifier
+
+pink:  fintune whole net work
+
 ![image-20211123005817637](./pic/image-20211123005817637.png)
 
 ## Imagenet
+
+Red: fintune classifier
+
+Pink&green: fintune whole net work
 
 ![image-20211123184356725](./pic/image-20211123184356725.png)
 
