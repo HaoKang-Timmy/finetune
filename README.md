@@ -21,12 +21,12 @@ typora-copy-images-to: ./pic
     - [CUB200](#cub200-1)
   - [Seperate Lr vs Fine-tuning last-3](#seperate-lr-vs-fine-tuning-last-3)
     - [CIFAR10](#cifar10-2)
+  - [L2-sp](#l2-sp)
 - [Train-from-scratch vs Fintune](#train-from-scratch-vs-fintune)
   - [Training for Same Epochs](#training-for-same-epochs)
   - [Training for More Epochs](#training-for-more-epochs)
   - [Difference of Two Sets of Parameters](#difference-of-two-sets-of-parameters)
     - [cos similarity of bias](#cos-similarity-of-bias)
-
 
 
 # Settings
