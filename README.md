@@ -1,7 +1,6 @@
 # Report of Fintune
 
 # Menu
-
 - [Report of Fintune](#report-of-fintune)
 - [Menu](#menu)
 - [Settings](#settings)
@@ -12,16 +11,16 @@
     - [CUB200](#cub200)
     - [Imagenet](#imagenet)
 - [Strategy Compare](#strategy-compare)
-  - [Standard Fine-tuning vs separate lr](#standard-fine-tuning-vs-separate-lr)
-    - [result](#result)
+  - [Standard Fine-tuning vs Separate Lr](#standard-fine-tuning-vs-separate-lr)
+    - [Result](#result)
     - [CIFAR10](#cifar10-1)
     - [CUB200](#cub200-1)
-  - [seperate lr vs Fine-tuning last-3](#seperate-lr-vs-fine-tuning-last-3)
+  - [Seperate Lr vs Fine-tuning last-3](#seperate-lr-vs-fine-tuning-last-3)
     - [CIFAR10](#cifar10-2)
-- [Train-from-scratch vs fintune](#train-from-scratch-vs-fintune)
-  - [Training for same epochs](#training-for-same-epochs)
-  - [training for more epochs](#training-for-more-epochs)
-  - [Difference of two sets of parameters](#difference-of-two-sets-of-parameters)
+- [Train-from-scratch vs Fintune](#train-from-scratch-vs-fintune)
+  - [Training for Same Epochs](#training-for-same-epochs)
+  - [Training for More Epochs](#training-for-more-epochs)
+  - [Difference of Two Sets of Parameters](#difference-of-two-sets-of-parameters)
     - [cos similarity of bias](#cos-similarity-of-bias)
 
 
@@ -63,13 +62,29 @@ Y-axis: loss
 
 ### CUB200
 
+X-axis: epoch
+
+Y-axis: acc%
+
 ![image-20211125101410191](./pic/image-20211125101410191.png)
+
+X-axis: epoch
+
+Y-axis: loss
 
 ![image-20211125101527341](./pic/image-20211125101527341.png)
 
 ### Imagenet
 
+X-axis: epoch
+
+Y-axis: acc%
+
 ![image-20211125101612803](./pic/image-20211125101612803.png)
+
+X-axis: epoch
+
+Y-axis: loss
 
 ![image-20211125101635876](./pic/image-20211125101635876.png)
 
@@ -77,7 +92,7 @@ Y-axis: loss
 
 Since Imagenet is too slow to train, I use CIFAR10 to implement these strategy.All parameters are same, lr, weight decay, and others.
 
-## Standard Fine-tuning vs separate lr 
+## Standard Fine-tuning vs Separate Lr 
 
 Standard Fine-tuning
 
@@ -100,7 +115,7 @@ separate lr
                                          'params': low_params, 'lr': args.lr*0.6}, {'params': deep_params, 'lr': args.lr*0.4}], lr=args.lr)
 ```
 
-### result
+### Result
 
 ### CIFAR10
 
@@ -128,7 +143,7 @@ Which is similar to this article,https://arxiv.org/pdf/1811.08737.pdf.
 
 
 
-## seperate lr vs Fine-tuning last-3 
+## Seperate Lr vs Fine-tuning last-3 
 
 ### CIFAR10
 
@@ -138,11 +153,11 @@ blue curve: seperate lr
 
 ![image-20211125201352556](./pic/image-20211125201352556.png)
 
-# Train-from-scratch vs fintune
+# Train-from-scratch vs Fintune
 
 In this section, I choose the different layer with seperate lr fintune method shown above.
 
-## Training for same epochs
+## Training for Same Epochs
 
 red curve: train-from-scratch
 
@@ -154,7 +169,7 @@ Blue curve: fintune
 
 Using same learning rate decay strategy(exp decay), we can not get similar results.
 
-## training for more epochs
+## Training for More Epochs
 
 However, when I try to continue training, it seems to stop to grow.
 
@@ -164,7 +179,7 @@ However, when I try to continue training, it seems to stop to grow.
 
 Then I try to use these two sets of parameters to analyze the difference.
 
-## Difference of two sets of parameters
+## Difference of Two Sets of Parameters
 
 ### cos similarity of bias
 
