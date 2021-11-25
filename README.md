@@ -1,3 +1,7 @@
+---
+typora-copy-images-to: ./pic
+---
+
 # Report of Fintune
 
 # Menu
@@ -152,6 +156,39 @@ green curve:fFine-tuning last-3
 blue curve: seperate lr
 
 ![image-20211125201352556](./pic/image-20211125201352556.png)
+
+## L2-sp
+
+https://arxiv.org/pdf/1802.01483.pdf
+
+The article above shows that when we use L2 normalization in fin tune. We might need to change its form.
+
+![image-20211126005904684](./pic/image-20211126005904684.png)
+
+So I rewrite optimizer
+
+```python
+def l2sp_adam(params: List[Tensor],
+         grads: List[Tensor],
+         lr: float,
+         weight_decay: float,
+          l2sp=0):
+
+    for i, param in enumerate(params):
+
+        grad = grads[i]
+
+        if weight_decay != 0 and l2sp != 0:
+            grad = grad.add(l2sp[i], alpha=weight_decay)
+
+
+        step = - grad * lr 
+        param.add_(step)
+```
+
+However, the result is uncomfortable, the reason is that when I use torchvision pretrained model. I must reset the classifier layer. It is conflict to what the article requires:(
+
+![image-20211126010759201](./pic/image-20211126010759201.png)
 
 # Train-from-scratch vs Fintune
 
