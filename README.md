@@ -1,3 +1,7 @@
+---
+typora-copy-images-to: ./pic
+---
+
 # Report of Fintune
 
 
@@ -16,9 +20,9 @@ Dataset:CIFAR10,CUB200,CAR196,FOOD101,CIFAR100
 | -------- | -------------- | --------------- |
 | Cifar10  | 96.224         |                 |
 | Car196   | 87.295         |                 |
-| Food101  | 80.124         |                 |
-| Cifar100 | 71.242         |                 |
-| CUB200   | 72.141         |                 |
+| Food101  | 8.124          |                 |
+| Cifar100 | 73.242         |                 |
+| CUB200   | 78.141         |                 |
 
 ## curve
 
@@ -101,7 +105,21 @@ It could be infer that using different lr at different layer, which is small lr 
 
 Which is similar to this article,https://arxiv.org/pdf/1811.08737.pdf.
 
-### 
+# Train-from-scratch vs fintune
+
+In this section, I choose the different layer with different lr fintune method shown above.
+
+## Training for same epochs
+
+red curve: train-from-scratch
+
+Blue curve: fintune
+
+![image-20211125131055325](./pic/image-20211125131055325.png)
+
+
+
+Using same learning rate decay strategy(exp decay), we can not get similar results.
 
 
 
