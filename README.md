@@ -222,4 +222,4 @@ Then I try to use these two sets of parameters to analyze the difference.
 
 ![image-20211125200847772](./pic/image-20211125200847772.png)
 
-However I still need a technique to analyse weight(tensors), it is to be done.
+However I still need a technique to analyse weight(tensors), it is to be done
