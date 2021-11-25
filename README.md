@@ -1,7 +1,3 @@
----
-typora-copy-images-to: ./pic
----
-
 # Report of Fintune
 
 
@@ -12,7 +8,7 @@ Arch: MobileNetV2
 
 Dataset:CIFAR10,CUB200,CAR196,FOOD101,CIFAR100
 
-# Results(best fintun strategy)
+# Results(best fintune strategy)
 
 ## table
 
