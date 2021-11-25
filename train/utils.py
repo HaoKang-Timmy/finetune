@@ -5,6 +5,7 @@ from vision.vision_class import AverageMeter, ProgressMeter
 from dataset.dataset_collection import DatasetCollection
 import torchvision.transforms as transforms
 import torch.utils.data.distributed
+from torch.optim.optimizer import Optimizer
 def train(train_loader, model, criterion, optimizer, epoch, args,ngpus_per_node,writer = None):
     batch_time = AverageMeter('Time', ':6.3f')
     data_time = AverageMeter('Data', ':6.3f')
@@ -163,3 +164,15 @@ def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
     torch.save(state, filename)
     if is_best:
         shutil.copyfile(filename, 'model_best.pth.tar')
+
+class l2sp(Optimizer):
+    def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8,
+                weight_decay=0, amsgrad=False):
+        defaults = dict(lr=lr, betas=betas, eps=eps,
+                        weight_decay=weight_decay, amsgrad=amsgrad,initial_param = params)
+        super(l2sp, self).__init__(params, defaults)
+
+    def __setstate__(self, state):
+        super(l2sp, self).__setstate__(state)
+        for group in self.param_groups:
+            group.setdefault('amsgrad', False)
