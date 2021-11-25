@@ -2,7 +2,27 @@
 
 # Menu
 
-[TOC]
+- [Report of Fintune](#report-of-fintune)
+- [Menu](#menu)
+- [Settings](#settings)
+- [Results(best fintune strategy)](#results-best-fintune-strategy-)
+  * [table](#table)
+  * [curve](#curve)
+    + [CIFAR10](#cifar10)
+    + [CUB200](#cub200)
+    + [Imagenet](#imagenet)
+- [Strategy Compare](#strategy-compare)
+  * [Standard Fine-tuning vs separate lr](#standard-fine-tuning-vs-separate-lr)
+    + [result](#result)
+    + [CIFAR10](#cifar10-1)
+    + [CUB200](#cub200-1)
+  * [seperate lr vs Fine-tuning last-3](#seperate-lr-vs-fine-tuning-last-3)
+    + [CIFAR10](#cifar10-2)
+- [Train-from-scratch vs fintune](#train-from-scratch-vs-fintune)
+  * [Training for same epochs](#training-for-same-epochs)
+  * [training for more epochs](#training-for-more-epochs)
+  * [Difference of two sets of parameters](#difference-of-two-sets-of-parameters)
+    + [cos similarity of bias](#cos-similarity-of-bias)
 
 
 
