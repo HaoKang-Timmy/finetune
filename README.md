@@ -1,3 +1,7 @@
+---
+typora-copy-images-to: ./pic
+---
+
 # Report of Fintune
 
 
@@ -24,7 +28,17 @@ Dataset:CIFAR10,CUB200,CAR196,FOOD101,CIFAR100
 
 ### CIFAR10
 
-![image-20211125100333222](./pic/image-20211125100333222.png)![image-20211125100355745](./pic/image-20211125100355745.png)
+X-axis: epoch
+
+Y-axis: acc%
+
+![image-20211125100333222](./pic/image-20211125100333222.png)
+
+X-axis: epoch
+
+Y-axis: loss
+
+![image-20211125100355745](./pic/image-20211125100355745.png)
 
 ### CUB200
 
@@ -40,7 +54,7 @@ Dataset:CIFAR10,CUB200,CAR196,FOOD101,CIFAR100
 
 # Strategy Compare
 
-Since Imagenet is too slow to train, I use CIFAR10 to implement these strategy
+Since Imagenet is too slow to train, I use CIFAR10 to implement these strategy.
 
 ## same lr in each layer vs separate lr 
 
@@ -66,4 +80,20 @@ Different
 ```
 
 ### result
+
+## CIFAR10
+
+Blue curve:different
+
+Orange curve:same
+
+![image-20211125112331630](./pic/image-20211125112331630.png)
+
+![image-20211125112353758](./pic/image-20211125112353758.png)
+
+
+
+It could be infer that using different lr at different layer, which is small lr for deep layers gets better results in validation datasets comparing to same lr for all layers.
+
+Which is similar to this article,https://arxiv.org/pdf/1811.08737.pdf.
 
