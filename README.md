@@ -1,5 +1,9 @@
 # Report of Fintune
 
+# Menu
+
+[TOC]
+
 
 
 # Settings
@@ -55,14 +59,14 @@ Since Imagenet is too slow to train, I use CIFAR10 to implement these strategy.
 
 ## Standard Fine-tuning vs separate lr 
 
-Same
+Standard Fine-tuning
 
 ```python
                 optimizer = torch.optim.Adam(model.parameters(), args.lr,
                                              weight_decay=args.weight_decay)
 ```
 
-Different
+separate lr 
 
 ```python
             classifier_map = list(map(id, model.classifier.parameters()))
@@ -80,9 +84,9 @@ Different
 
 ### CIFAR10
 
-Blue curve:different
+Blue curve:separate lr 
 
-Orange curve:same
+Orange curve:Standard Fine-tuning
 
 ![image-20211125112331630](./pic/image-20211125112331630.png)
 
@@ -90,9 +94,9 @@ Orange curve:same
 
 ### CUB200
 
-Pink curve: different
+Pink curve: separate lr 
 
-Greee curve: same
+Green curve: Standard Fine-tuning
 
 ![image-20211125113624240](./pic/image-20211125113624240.png)
 
@@ -112,7 +116,7 @@ green curve:fFine-tuning last-3
 
 blue curve: seperate lr
 
-![image-20211125201352556](/Users/catbeta/Documents/ml/fintune/pic/image-20211125201352556.png)
+![image-20211125201352556](./pic/image-20211125201352556.png)
 
 # Train-from-scratch vs fintune
 
@@ -146,3 +150,4 @@ Then I try to use these two sets of parameters to analyze the difference.
 
 ![image-20211125200847772](./pic/image-20211125200847772.png)
 
+However I still need a technique to analyse weight(tensors), it is to be done
