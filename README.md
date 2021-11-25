@@ -163,7 +163,7 @@ https://arxiv.org/pdf/1802.01483.pdf
 
 The article above shows that when we use L2 normalization in fin tune. We might need to change its form.
 
-![image-20211126005904684](./pic/image-20211126005904684.png)
+![image-20211126011416359](./pic/image-20211126011416359.png)
 
 So I rewrite optimizer
 
