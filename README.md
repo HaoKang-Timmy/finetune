@@ -75,7 +75,7 @@ Y-axis: loss
 
 # Strategy Compare
 
-Since Imagenet is too slow to train, I use CIFAR10 to implement these strategy.
+Since Imagenet is too slow to train, I use CIFAR10 to implement these strategy.All parameters are same, lr, weight decay, and others.
 
 ## Standard Fine-tuning vs separate lr 
 
@@ -122,7 +122,7 @@ Green curve: Standard Fine-tuning
 
 ![image-20211125113844084](./pic/image-20211125113844084.png)
 
-It could be infer that using different lr at different layer, which is small lr for deep layers gets better results in validation datasets comparing to same lr for all layers.
+It could be infer that using seperate lr, which is small lr for deep layers gets better results in validation datasets comparing to Standard Fine-tuning.
 
 Which is similar to this article,https://arxiv.org/pdf/1811.08737.pdf.
 

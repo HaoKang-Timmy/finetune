@@ -249,6 +249,7 @@ def main_worker(gpu, ngpus_per_node, args):
     for epoch in range(args.start_epoch, args.epochs):
         if args.distributed:
             train_sampler.set_epoch(epoch)
+        print(model)
         # train for one epoch
 
         # if not args.multiprocessing_distributed or (args.multiprocessing_distributed
