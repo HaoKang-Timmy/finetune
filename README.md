@@ -81,7 +81,7 @@ Different
 
 ### result
 
-## CIFAR10
+### CIFAR10
 
 Blue curve:different
 
@@ -91,9 +91,21 @@ Orange curve:same
 
 ![image-20211125112353758](./pic/image-20211125112353758.png)
 
+### CUB200
 
+Pink curve: different
+
+Greee curve: same
+
+![image-20211125113624240](./pic/image-20211125113624240.png)
+
+![image-20211125113844084](./pic/image-20211125113844084.png)
 
 It could be infer that using different lr at different layer, which is small lr for deep layers gets better results in validation datasets comparing to same lr for all layers.
 
 Which is similar to this article,https://arxiv.org/pdf/1811.08737.pdf.
+
+### 
+
+
 
