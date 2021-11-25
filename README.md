@@ -34,13 +34,13 @@ Dataset:CIFAR10,CUB200,CAR196,FOOD101,CIFAR100
 
 ![image-20211125101410191](./pic/image-20211125101410191.png)
 
-![image-20211125101527341](/Users/catbeta/Documents/ml/fintune/pic/image-20211125101527341.png)
+![image-20211125101527341](./pic/image-20211125101527341.png)
 
 ### Imagenet
 
-![image-20211125101612803](/Users/catbeta/Documents/ml/fintune/pic/image-20211125101612803.png)
+![image-20211125101612803](./pic/image-20211125101612803.png)
 
-![image-20211125101635876](/Users/catbeta/Documents/ml/fintune/pic/image-20211125101635876.png)
+![image-20211125101635876](./pic/image-20211125101635876.png)
 
 # Strategy Compare
 
