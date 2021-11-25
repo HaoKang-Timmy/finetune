@@ -19,6 +19,7 @@ Dataset:CIFAR10,CUB200,CAR196,FOOD101,CIFAR100
 | Food101  | 8.124          |                 |
 | Cifar100 | 73.242         |                 |
 | CUB200   | 78.141         |                 |
+| Imagenet | 70.241         |                 |
 
 ## curve
 
@@ -52,7 +53,7 @@ Y-axis: loss
 
 Since Imagenet is too slow to train, I use CIFAR10 to implement these strategy.
 
-## same lr in each layer vs separate lr 
+## Standard Fine-tuning vs separate lr 
 
 Same
 
@@ -101,6 +102,18 @@ It could be infer that using different lr at different layer, which is small lr 
 
 Which is similar to this article,https://arxiv.org/pdf/1811.08737.pdf.
 
+
+
+## seperate lr vs Fine-tuning last-3 
+
+### CIFAR10
+
+green curve:fFine-tuning last-3 
+
+blue curve: seperate lr
+
+![image-20211125201352556](/Users/catbeta/Documents/ml/fintune/pic/image-20211125201352556.png)
+
 # Train-from-scratch vs fintune
 
 In this section, I choose the different layer with different lr fintune method shown above.
@@ -117,5 +130,19 @@ Blue curve: fintune
 
 Using same learning rate decay strategy(exp decay), we can not get similar results.
 
-#
+## training for more epochs
+
+However, when I try to continue training, it seems to stop to grow.
+
+![image-20211125143520267](./pic/image-20211125143520267.png)
+
+![image-20211125143603418](./pic/image-20211125143603418.png)
+
+Then I try to use these two sets of parameters to analyze the difference.
+
+## Difference of two sets of parameters
+
+### cos similarity of bias
+
+![image-20211125200847772](./pic/image-20211125200847772.png)
 
