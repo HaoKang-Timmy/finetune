@@ -5,7 +5,7 @@
 - [Report of Fintune](#report-of-fintune)
 - [Menu](#menu)
 - [Settings](#settings)
-- [Results(best fintune strategy)](#resultsbest-fintune-strategy)
+- [Results(seperate lr strategy)](#resultsseperate-lr-strategy)
   - [table](#table)
   - [curve](#curve)
     - [CIFAR10](#cifar10)
@@ -32,7 +32,7 @@ Arch: MobileNetV2
 
 Dataset:CIFAR10,CUB200,CAR196,FOOD101,CIFAR100
 
-# Results(best fintune strategy)
+# Results(seperate lr strategy)
 
 ## table
 
