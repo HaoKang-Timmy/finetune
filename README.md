@@ -7,8 +7,8 @@
 - [Menu](#menu)
 - [Settings](#settings)
 - [Results(seperate lr strategy)](#resultsseperate-lr-strategy)
-  - [table](#table)
-  - [curve](#curve)
+  - [Table](#Table)
+  - [Curve](#Curve)
     - [CIFAR10](#cifar10)
     - [CUB200](#cub200)
     - [Imagenet](#imagenet)
@@ -24,7 +24,7 @@
   - [Training for Same Epochs](#training-for-same-epochs)
   - [Training for More Epochs](#training-for-more-epochs)
   - [Difference of Two Sets of Parameters](#difference-of-two-sets-of-parameters)
-    - [cos similarity of bias](#cos-similarity-of-bias)
+    - [Cos Similarity of Bias](#cos-similarity-of-bias)
 
 
 # Settings
@@ -35,7 +35,7 @@ Dataset:CIFAR10,CUB200,CAR196,FOOD101,CIFAR100
 
 # Results(seperate lr strategy)
 
-## table
+## Table
 
 | Dataset  | Val_acc%(top1) | Test_acc%(top1) |
 | -------- | -------------- | --------------- |
@@ -46,7 +46,7 @@ Dataset:CIFAR10,CUB200,CAR196,FOOD101,CIFAR100
 | CUB200   | 78.141         |                 |
 | Imagenet | 70.241         |                 |
 
-## curve
+## Curve
 
 ### CIFAR10
 
@@ -217,7 +217,7 @@ Then I try to use these two sets of parameters to analyze the difference.
 
 ## Difference of Two Sets of Parameters
 
-### cos similarity of bias
+### Cos Similarity of Bias
 
 ![image-20211125200847772](./pic/image-20211125200847772.png)
 
