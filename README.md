@@ -187,6 +187,8 @@ def l2sp_adam(params: List[Tensor],
 
 However, the result is uncomfortable, the reason is that when I use torchvision pretrained model. I must reset the classifier layer. It is conflict to what the article requires:(
 
+It could be regarded as L1 and L2 normalization.
+
 ![image-20211126010759201](./pic/image-20211126010759201.png)
 
 # Train-from-scratch vs Fintune
