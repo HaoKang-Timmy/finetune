@@ -1,5 +1,3 @@
-
-
 # Report of Fintune
 
 # Menu
@@ -167,6 +165,54 @@ The article above shows that when we use L2 normalization in fin tune. We might 
 So I rewrite optimizer
 
 ```python
+class l2sp(Optimizer):
+    def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8,
+                weight_decay=0, amsgrad=False):
+        defaults = dict(lr=lr, betas=betas, eps=eps,
+                        weight_decay=weight_decay, amsgrad=amsgrad)
+        self.oldparam = params
+        super(l2sp, self).__init__(params, defaults)
+
+    def __setstate__(self, state):
+        super(l2sp, self).__setstate__(state)
+        for group in self.param_groups:
+            group.setdefault('amsgrad', False)
+
+    @torch.no_grad()
+    def step(self, closure=None):
+        loss = None
+        if closure is not None:
+            with torch.enable_grad():
+                loss = closure()
+
+        for group in self.param_groups:
+            params_with_grad = []
+            grads = []
+            old_params_with_grad = []
+            for p in group['params']:
+                if p.grad is not None:
+                    params_with_grad.append(p)
+                    if p.grad.is_sparse:
+                        raise RuntimeError(
+                            'Adam does not support sparse gradients, please consider SparseAdam instead')
+                    grads.append(p.grad)
+                    state = self.state[p]
+                    # Lazy state initialization
+                    if len(state) == 0:
+                        state['step'] = 0
+                
+            for q in self.oldparam:
+                if q.grad is not None:
+                    old_params_with_grad.append(p)
+
+
+
+            l2sp_adam(params_with_grad,
+                   grads,
+                   lr=group['lr'],
+                   weight_decay=group['weight_decay'],
+                   l2sp = old_params_with_grad)
+        return loss
 def l2sp_adam(params: List[Tensor],
          grads: List[Tensor],
          lr: float,
@@ -181,15 +227,19 @@ def l2sp_adam(params: List[Tensor],
             grad = grad.add(l2sp[i], alpha=weight_decay)
 
 
-        step = - grad * lr 
+        step = grad * lr 
         param.add_(step)
 ```
 
-However, the result is uncomfortable, the reason is that when I use torchvision pretrained model. I must reset the classifier layer. It is conflict to what the article requires:(
+It shows really good results. In CIFAR10, this technique helps improve a lot comparing to seperate lr! :)
 
-It could be regarded as L1 and L2 normalization.
+It could be regarded as L1 and L2 normalization.( which L1 has a special value)
 
-![image-20211126010759201](./pic/image-20211126010759201.png)
+Light Blue curve: L2-sp
+
+blue curve : seperate lr
+
+![image-20211126135755928](./pic/image-20211126135755928.png)
 
 # Train-from-scratch vs Fintune
 
