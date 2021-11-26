@@ -223,4 +223,4 @@ Then I try to use these two sets of parameters to analyze the difference.
 
 It shows that ony classifier bias of training from scratch is similar to fintune model parameters.
 
-However I still need a technique to analyse weight(tensors), it is to be done.
+However I still need a technique to analyse weight(tensors), it is to be done
