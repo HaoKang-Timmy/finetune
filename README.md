@@ -154,6 +154,7 @@ green curve:fFine-tuning last-3
 blue curve: seperate lr
 
 ![image-20211125201352556](./pic/image-20211125201352556.png)
+No doubt Fine-tuning last-3 is a bad choice for MobileNetV2 in CIFAR!
 
 ## L2-sp
 
@@ -219,5 +220,6 @@ Then I try to use these two sets of parameters to analyze the difference.
 ### cos similarity of bias
 
 ![image-20211125200847772](./pic/image-20211125200847772.png)
+It shows that ony classifier bias of training from scratch is similar to fintune model parameters.
 
 However I still need a technique to analyse weight(tensors), it is to be done.
