@@ -4,7 +4,7 @@ import random
 import warnings
 from dataset.dataset_collection import DatasetCollection
 from vision.vision_class import AverageMeter, ProgressMeter
-from utils import train, validate, adjust_learning_rate, save_checkpoint,prepare_dataloader
+from utils import train, validate, adjust_learning_rate, save_checkpoint, prepare_dataloader
 import torch
 import torch.nn as nn
 import torch.nn.parallel
@@ -136,13 +136,13 @@ def main_worker(gpu, ngpus_per_node, args):
     else:
         print("=> creating model '{}'".format(args.arch))
         model = models.__dict__[args.arch]()
-    #still could just work on mobilenet_v2
+    # still could just work on mobilenet_v2
     if args.dataset_type == 'CUB200':
-        model.classifier[-1] = nn.Linear(1280,200)
+        model.classifier[-1] = nn.Linear(1280, 200)
     elif args.dataset_type == 'CIFAR10':
-        model.classifier[-1] = nn.Linear(1280,10)
+        model.classifier[-1] = nn.Linear(1280, 10)
     elif args.dataset_type == 'CIFAR100':
-        model.classifier[-1] = nn.Linear(1280,100)
+        model.classifier[-1] = nn.Linear(1280, 100)
     if args.train_method == 'fintune':
         for param in model.parameters():
             param.requires_grad = False
@@ -218,7 +218,7 @@ def main_worker(gpu, ngpus_per_node, args):
                 # best_acc1 may be from a checkpoint from a different GPU
                 best_acc1 = best_acc1.to(args.gpu)
             model.load_state_dict(checkpoint['state_dict'])
-            #optimizer.load_state_dict(checkpoint['optimizer'])
+            # optimizer.load_state_dict(checkpoint['optimizer'])
             print("=> loaded checkpoint '{}' (epoch {})"
                   .format(args.resume, checkpoint['epoch']))
         else:
@@ -241,7 +241,8 @@ def main_worker(gpu, ngpus_per_node, args):
         transforms.ToTensor(),
         normalize,
     ])
-    train_sampler, train_loader, val_loader = prepare_dataloader(normalize,compose_train,compose_val,args)
+    train_sampler, train_loader, val_loader = prepare_dataloader(
+        normalize, compose_train, compose_val, args)
 
     if args.evaluate:
         validate(val_loader, model, criterion, args)
@@ -257,13 +258,14 @@ def main_worker(gpu, ngpus_per_node, args):
         #     train(train_loader, model, criterion, optimizer,
         #           epoch, args, ngpus_per_node, writer=writer)
         acc1_train, loss_train = train(train_loader, model, criterion,
-              optimizer, epoch, args, ngpus_per_node)
+                                       optimizer, epoch, args, ngpus_per_node)
         adjust_learning_rate(scheduler)
         # evaluate on validation set
         # if not args.multiprocessing_distributed or (args.multiprocessing_distributed
         #                                             and args.rank % ngpus_per_node == 0):
         #     acc1 = validate(val_loader, model, criterion, args,ngpus_per_node,writer=writer)
-        acc1,loss_val = validate(val_loader, model, criterion, args,ngpus_per_node)
+        acc1, loss_val = validate(
+            val_loader, model, criterion, args, ngpus_per_node)
         # remember best acc@1 and save checkpoint
         is_best = acc1 > best_acc1
         best_acc1 = max(acc1, best_acc1)
@@ -277,11 +279,11 @@ def main_worker(gpu, ngpus_per_node, args):
                 'optimizer': optimizer.state_dict(),
             }, is_best)
             if args.tensorboard:
-                print(loss_train,acc1_train,loss_val,acc1)
-                writer.add_scalar('loss/train',loss_train,epoch)
-                writer.add_scalar('acc/train',acc1_train,epoch)
-                writer.add_scalar('loss/val',loss_val,epoch)
-                writer.add_scalar('acc/val',acc1,epoch)
+                print(loss_train, acc1_train, loss_val, acc1)
+                writer.add_scalar('loss/train', loss_train, epoch)
+                writer.add_scalar('acc/train', acc1_train, epoch)
+                writer.add_scalar('loss/val', loss_val, epoch)
+                writer.add_scalar('acc/val', acc1, epoch)
 
 
 if __name__ == '__main__':

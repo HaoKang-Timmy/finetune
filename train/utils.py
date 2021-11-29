@@ -10,7 +10,9 @@ from torch.autograd import Function as F
 from typing import List, Optional
 from torch import Tensor
 import math
-def train(train_loader, model, criterion, optimizer, epoch, args,ngpus_per_node,writer = None):
+
+
+def train(train_loader, model, criterion, optimizer, epoch, args, ngpus_per_node, writer=None):
     batch_time = AverageMeter('Time', ':6.3f')
     data_time = AverageMeter('Data', ':6.3f')
     losses = AverageMeter('Loss', ':.4e')
@@ -62,7 +64,7 @@ def train(train_loader, model, criterion, optimizer, epoch, args,ngpus_per_node,
     return top1.avg, losses.avg
 
 
-def validate(val_loader, model, criterion, args,ngpus_per_node,writer = None):
+def validate(val_loader, model, criterion, args, ngpus_per_node, writer=None):
     batch_time = AverageMeter('Time', ':6.3f')
     losses = AverageMeter('Loss', ':.4e')
     top1 = AverageMeter('Acc@1', ':6.2f')
@@ -107,9 +109,10 @@ def validate(val_loader, model, criterion, args,ngpus_per_node,writer = None):
         print(' * Acc@1 {top1.avg:.3f} Acc@5 {top5.avg:.3f}'
               .format(top1=top1, top5=top5))
 
-    return top1.avg,losses.avg
+    return top1.avg, losses.avg
 
-def prepare_dataloader(normalize,compose_train,compose_val,args):
+
+def prepare_dataloader(normalize, compose_train, compose_val, args):
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
 
@@ -145,6 +148,8 @@ def prepare_dataloader(normalize,compose_train,compose_val,args):
         batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=True)
     return train_sampler, train_loader, val_loader
+
+
 def adjust_learning_rate(scheduler):
     scheduler.step()
 
@@ -164,14 +169,17 @@ def accuracy(output, target, topk=(1,)):
             correct_k = correct[:k].reshape(-1).float().sum(0, keepdim=True)
             res.append(correct_k.mul_(100.0 / batch_size))
         return res
+
+
 def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
     torch.save(state, filename)
     if is_best:
         shutil.copyfile(filename, 'model_best.pth.tar')
 
+
 class l2sp(Optimizer):
     def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8,
-                weight_decay=0, amsgrad=False):
+                 weight_decay=0, amsgrad=False):
         defaults = dict(lr=lr, betas=betas, eps=eps,
                         weight_decay=weight_decay, amsgrad=amsgrad)
         self.oldparam = params
@@ -208,19 +216,23 @@ class l2sp(Optimizer):
                 if p.grad is not None:
                     params_with_grad.append(p)
                     if p.grad.is_sparse:
-                        raise RuntimeError('Adam does not support sparse gradients, please consider SparseAdam instead')
+                        raise RuntimeError(
+                            'Adam does not support sparse gradients, please consider SparseAdam instead')
                     grads.append(p.grad)
                     state = self.state[p]
                     # Lazy state initialization
                     if len(state) == 0:
                         state['step'] = 0
                         # Exponential moving average of gradient values
-                        state['exp_avg'] = torch.zeros_like(p, memory_format=torch.preserve_format)
+                        state['exp_avg'] = torch.zeros_like(
+                            p, memory_format=torch.preserve_format)
                         # Exponential moving average of squared gradient values
-                        state['exp_avg_sq'] = torch.zeros_like(p, memory_format=torch.preserve_format)
+                        state['exp_avg_sq'] = torch.zeros_like(
+                            p, memory_format=torch.preserve_format)
                         if group['amsgrad']:
                             # Maintains max of all exp. moving avg. of sq. grad. values
-                            state['max_exp_avg_sq'] = torch.zeros_like(p, memory_format=torch.preserve_format)
+                            state['max_exp_avg_sq'] = torch.zeros_like(
+                                p, memory_format=torch.preserve_format)
 
                     exp_avgs.append(state['exp_avg'])
                     exp_avg_sqs.append(state['exp_avg_sq'])
@@ -234,31 +246,33 @@ class l2sp(Optimizer):
                     state_steps.append(state['step'])
             print(params_with_grad)
             l2sp_adam(params_with_grad,
-                   grads,
-                   exp_avgs,
-                   exp_avg_sqs,
-                   max_exp_avg_sqs,
-                   state_steps,
-                   amsgrad=group['amsgrad'],
-                   beta1=beta1,
-                   beta2=beta2,
-                   lr=group['lr'],
-                   weight_decay=group['weight_decay'],
-                   eps=group['eps'])
+                      grads,
+                      exp_avgs,
+                      exp_avg_sqs,
+                      max_exp_avg_sqs,
+                      state_steps,
+                      amsgrad=group['amsgrad'],
+                      beta1=beta1,
+                      beta2=beta2,
+                      lr=group['lr'],
+                      weight_decay=group['weight_decay'],
+                      eps=group['eps'])
         return loss
+
+
 def l2sp_adam(params: List[Tensor],
-         grads: List[Tensor],
-         exp_avgs: List[Tensor],
-         exp_avg_sqs: List[Tensor],
-         max_exp_avg_sqs: List[Tensor],
-         state_steps: List[int],
-         *,
-         amsgrad: bool,
-         beta1: float,
-         beta2: float,
-         lr: float,
-         weight_decay: float,
-         eps: float,l2sp = 0):
+              grads: List[Tensor],
+              exp_avgs: List[Tensor],
+              exp_avg_sqs: List[Tensor],
+              max_exp_avg_sqs: List[Tensor],
+              state_steps: List[int],
+              *,
+              amsgrad: bool,
+              beta1: float,
+              beta2: float,
+              lr: float,
+              weight_decay: float,
+              eps: float, l2sp=0):
     # for i, param in enumerate(params):
 
     #     grad = grads[i]
@@ -287,4 +301,3 @@ def l2sp_adam(params: List[Tensor],
 
     #     param.addcdiv_(exp_avg, denom, value=-step_size)
     pass
-

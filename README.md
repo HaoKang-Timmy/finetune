@@ -1,3 +1,7 @@
+---
+typora-copy-images-to: ./pic
+---
+
 # Report of Fintune
 
 # Menu
@@ -239,7 +243,13 @@ Light Blue curve: L2-sp
 
 blue curve : seperate lr
 
+### CIFAR10
+
 ![image-20211126135755928](./pic/image-20211126135755928.png)
+
+### CUB200
+
+![image-20211126150210362](./pic/image-20211126150210362.png)
 
 # Train-from-scratch vs Fintune
 
