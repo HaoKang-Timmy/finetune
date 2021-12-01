@@ -10,6 +10,10 @@ from torch.autograd import Function as F
 from typing import List, Optional
 from torch import Tensor
 import math
+import torch.nn as nn
+from ofa.utils import get_same_padding, make_divisible, build_activation, init_models
+from collections import OrderedDict
+import torch.nn.functional as function
 
 
 def train(train_loader, model, criterion, optimizer, epoch, args, ngpus_per_node, writer=None):
@@ -301,3 +305,62 @@ def l2sp_adam(params: List[Tensor],
 
     #     param.addcdiv_(exp_avg, denom, value=-step_size)
     pass
+
+class LiteResidualModule(nn.Module):
+
+    def __init__(self, main_branch, in_channels, out_channels,
+                 expand=1.0, kernel_size=3, act_func='relu', n_groups=2,
+                 downsample_ratio=2, upsample_type='bilinear', stride=1):
+        super(LiteResidualModule, self).__init__()
+        self.main_branch = main_branch
+        self.lite_residual_config = {
+        	'in_channels': in_channels,
+        	'out_channels': out_channels,
+        	'expand': expand,
+        	'kernel_size': kernel_size,
+        	'act_func': act_func,
+        	'n_groups': n_groups,
+        	'downsample_ratio': downsample_ratio,
+        	'upsample_type': upsample_type,
+        	'stride': stride,
+        }
+        kernel_size = 1 if downsample_ratio is None else kernel_size
+        padding = get_same_padding(kernel_size)
+        pooling = nn.AvgPool2d(downsample_ratio, downsample_ratio, 0)
+        num_mid = make_divisible(int(in_channels * expand), divisor=8)
+        self.lite_residual = nn.Sequential(OrderedDict({
+            'pooling': pooling,
+            'conv1': nn.Conv2d(in_channels, num_mid, kernel_size, stride, padding, groups=n_groups, bias=False),
+            'bn1': nn.BatchNorm2d(num_mid),
+            'act': build_activation(act_func),
+            'conv2': nn.Conv2d(num_mid, out_channels, 1, 1, 0, bias=False),
+            'final_bn': nn.BatchNorm2d(out_channels),
+        }))
+        print(self.lite_residual)
+        init_models(self.lite_residual)
+        self.lite_residual.final_bn.weight.data.zero_()
+
+
+    def forward(self, x):
+        main_x = self.main_branch(x)
+        lite_residual_x = self.lite_residual(x)
+        if self.lite_residual_config['downsample_ratio'] is not None:
+        	lite_residual_x = F.upsample(lite_residual_x, main_x.shape[2:],
+        	                             mode=self.lite_residual_config['upsample_type'])
+        return main_x + lite_residual_x
+
+    @staticmethod
+    def insert_lite_residual(net, downsample_ratio=2, upsample_type='bilinear',
+	                         expand=1.0, max_kernel_size=5, act_func='relu', n_groups=2,
+	                         **kwargs):
+        for i in range(1,18):
+            print(i)
+            print(net.features[i])
+            if i == 1:
+                net.features[i] = LiteResidualModule(net.features[i], in_channels=net.features[i].conv[0][0].in_channels, out_channels= net.features[i].conv[1].out_channels, expand=expand, kernel_size=3,
+						act_func=act_func, n_groups=n_groups, downsample_ratio=downsample_ratio,
+						upsample_type=upsample_type, stride=net.features[i].conv[0][0].stride[1],)
+            else:
+                net.features[i] = LiteResidualModule(net.features[i], in_channels=net.features[i].conv[0][0].in_channels, out_channels= net.features[i].conv[2].out_channels, expand=expand, kernel_size=3,
+						act_func=act_func, n_groups=n_groups, downsample_ratio=downsample_ratio,
+						upsample_type=upsample_type, stride=net.features[i].conv[1][0].stride[1],)

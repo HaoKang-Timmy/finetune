@@ -5,7 +5,7 @@ loss_train_list = []
 acc_train_list = []
 loss_val_list = []
 acc_val_list = []
-with open('../log/train.txt', 'r') as file:
+with open('../log/train_bias.txt', 'r') as file:
     for line in file.readlines():
         line = line.strip().split("  ")
         iter, loss_train, acc_train, loss_val, acc_val = line[:]

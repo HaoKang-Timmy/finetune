@@ -3,6 +3,7 @@ import os
 import random
 import warnings
 from dataset.dataset_collection import DatasetCollection
+from fintune.train.utils import LiteResidualModule
 from vision.vision_class import AverageMeter, ProgressMeter
 from utils import train, validate, adjust_learning_rate, save_checkpoint, prepare_dataloader
 import torch
@@ -79,7 +80,7 @@ parser.add_argument('--gamma', default=0.9, type=float,
 parser.add_argument('--tensorboard', action='store_true',
                     help='set up a sesion at tensorboard')
 parser.add_argument('--train-method', choices=[
-                    'deep', 'low', 'fintune'], default='fintune', help='choose a training method')
+                    'deep', 'low', 'fintune', 'bias', 'tinytl'], default='fintune', help='choose a training method')
 best_acc1 = 0
 
 
@@ -150,23 +151,38 @@ def main_worker(gpu, ngpus_per_node, args):
             param.requires_grad = True
         optimizer = torch.optim.Adam(model.parameters(), args.lr,
                                      weight_decay=args.weight_decay)
-    else:
-        if args.train_method == 'low':
-            classifier_map = list(map(id, model.classifier.parameters()))
-            low_map = list(map(id, model.features[-5:]))
-            classifier_params = filter(lambda p: id(
-                p) in classifier_map, model.parameters())
-            low_params = filter(lambda p: id(p) in low_map, model.parameters())
-            deep_params = filter(lambda p: id(
-                p) not in low_map+classifier_map, model.parameters())
-            optimizer = torch.optim.Adam([{'params': classifier_params}, {
-                                         'params': low_params, 'lr': args.lr*0.6}, {'params': deep_params, 'lr': args.lr*0.4}], lr=args.lr)
-        else:
-            for param in model.parameters():
+    
+    elif args.train_method == 'low':
+        classifier_map = list(map(id, model.classifier.parameters()))
+        low_map = list(map(id, model.features[-5:]))
+        classifier_params = filter(lambda p: id(
+            p) in classifier_map, model.parameters())
+        low_params = filter(lambda p: id(p) in low_map, model.parameters())
+        deep_params = filter(lambda p: id(
+            p) not in low_map+classifier_map, model.parameters())
+        optimizer = torch.optim.Adam([{'params': classifier_params}, {
+                                        'params': low_params, 'lr': args.lr*0.6}, {'params': deep_params, 'lr': args.lr*0.4}], lr=args.lr)
+    elif args.train_method == 'deep':
+        for param in model.parameters():
+            param.requires_grad = True
+            optimizer = torch.optim.Adam(model.parameters(), args.lr,
+                                            weight_decay=args.weight_decay)
+    elif args.train_method == 'tinytl':
+        for param in model.parameters():
+            param.requires_grad = False
+        LiteResidualModule.insert_lite_residual(model)
+        optimizer = torch.optim.Adam(model.parameters(), args.lr,
+                    weight_decay=args.weight_decay)
+    elif args.train_method == 'bias':
+        for param in model.parameters():
+            param.requires_grad = False
+        for name, param in model.named_parameters():
+            if 'bias' in name:
+                print("bias")
                 param.requires_grad = True
-                optimizer = torch.optim.Adam(model.parameters(), args.lr,
-                                             weight_decay=args.weight_decay)
-
+        optimizer = torch.optim.Adam(model.parameters(), args.lr,
+                            weight_decay=args.weight_decay)
+            # l2sp_op =l2sp(model.parameters(), lr=args.lr*0.5)
     if not torch.cuda.is_available():
         print('using CPU')
     elif args.distributed:
@@ -284,7 +300,11 @@ def main_worker(gpu, ngpus_per_node, args):
                 writer.add_scalar('acc/train', acc1_train, epoch)
                 writer.add_scalar('loss/val', loss_val, epoch)
                 writer.add_scalar('acc/val', acc1, epoch)
+                train_loss_save = './log/train_bias.txt'
+                file_save1=open(train_loss_save,mode='a')
+                file_save1.write('\n'+'step:'+str(epoch)+'  loss_train:'+str(loss_train)+'  acc1_train:'+str(acc1_train.item())+'  loss_val:'+str(loss_val)+'  acc1_val:'+str(acc1.item()))
 
+                file_save1.close()
 
 if __name__ == '__main__':
     main()
