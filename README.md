@@ -132,16 +132,15 @@ No doubt Fine-tuning last-3 is a bad choice for MobileNetV2 in CIFAR!
 
 Batchsize = 1,model: MobileNetV2
 
-| Method  | activation cost(batch size = 1, n_groups = 2) | activation cost(batch size = 64, n_groups = 2) |
-| ------- | --------------------------------------------- | ---------------------------------------------- |
-| FT-Full | 1756MB                                        | 6225MB                                         |
-| TinyTL  | 1115MB                                        | 5725MB                                         |
-| FT-Last | 1157MB                                        |                                                |
-|         |                                               |                                                |
+| Method      | activation cost(batch size = 1, n_groups = 2) | activation cost(batch size = 64, n_groups = 2) |
+| ----------- | --------------------------------------------- | ---------------------------------------------- |
+| FT-Full     | 1756MB                                        | 6225MB                                         |
+| TinyTL+last | 815MB                                         | 3125MB                                         |
+| FT-Last     | 1157MB                                        | 5426MB                                         |
 
 ## curve
 
-![image-20211203014319585](/Users/catbeta/Documents/ml/fintune/pic/image-20211203014319585.png)
+![image-20211203014319585](./pic/image-20211203014319585.png)
 
 # Train-from-scratch vs Fintune
 
