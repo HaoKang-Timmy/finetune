@@ -2,15 +2,15 @@
 typora-copy-images-to: ./pic
 ---
 
-# Report of Fintune
+# Report of Finetune
 
 # Menu
-- [Report of Fintune](#report-of-fintune)
+- [Report of Finetune](#report-of-fintune)
 - [Menu](#menu)
 - [Settings](#settings)
-- [Results(seperate lr strategy)](#resultsseperate-lr-strategy)
-  - [Table](#Table)
-  - [Curve](#Curve)
+- [Results(separate lr strategy)](#resultsseperate-lr-strategy)
+  - [Table](#table)
+  - [Curve](#curve)
     - [CIFAR10](#cifar10)
     - [CUB200](#cub200)
     - [Imagenet](#imagenet)
@@ -22,11 +22,14 @@ typora-copy-images-to: ./pic
   - [Seperate Lr vs Fine-tuning last-3](#seperate-lr-vs-fine-tuning-last-3)
     - [CIFAR10](#cifar10-2)
   - [L2-sp](#l2-sp)
+    - [CIFAR10](#cifar10-3)
+    - [CUB200](#cub200-2)
 - [Train-from-scratch vs Fintune](#train-from-scratch-vs-fintune)
   - [Training for Same Epochs](#training-for-same-epochs)
   - [Training for More Epochs](#training-for-more-epochs)
   - [Difference of Two Sets of Parameters](#difference-of-two-sets-of-parameters)
     - [Cos Similarity of Bias](#cos-similarity-of-bias)
+- [tiny tl](#tiny-tl)
 
 
 # Settings
@@ -35,62 +38,27 @@ Arch: MobileNetV2
 
 Dataset:CIFAR10,CUB200,CAR196,FOOD101,CIFAR100
 
-# Results(seperate lr strategy)
+Strategy: Finetune the whole layer, finetune last-3-layers, feature extractor, tinytl, separate lr
+
+Pretrained model: Imagenet
+
+Method: reinitialize classifiers
+
+# Results(separate lr strategy)
 
 ## Table
 
-| Dataset  | Val_acc%(top1) | Test_acc%(top1) |
-| -------- | -------------- | --------------- |
-| Cifar10  | 96.224         |                 |
-| Car196   | 87.295         |                 |
-| Food101  | 81.124         |                 |
-| Cifar100 | 73.242         |                 |
-| CUB200   | 78.141         |                 |
-| Imagenet | 70.241         |                 |
-
-## Curve
-
-### CIFAR10
-
-X-axis: epoch
-
-Y-axis: acc%
-
-![image-20211125100333222](./pic/image-20211125100333222.png)
-
-X-axis: epoch
-
-Y-axis: loss
-
-![image-20211125100355745](./pic/image-20211125100355745.png)
-
-### CUB200
-
-X-axis: epoch
-
-Y-axis: acc%
-
-![image-20211125101410191](./pic/image-20211125101410191.png)
-
-X-axis: epoch
-
-Y-axis: loss
-
-![image-20211125101527341](./pic/image-20211125101527341.png)
-
-### Imagenet
-
-X-axis: epoch
-
-Y-axis: acc%
-
-![image-20211125101612803](./pic/image-20211125101612803.png)
-
-X-axis: epoch
-
-Y-axis: loss
-
-![image-20211125101635876](./pic/image-20211125101635876.png)
+| Dataset                     | Val_acc%(top1) | Test_acc%(top1) |
+| --------------------------- | -------------- | --------------- |
+| Cifar10(whole layer & Adam) | 96.224         |                 |
+| CIfar10(tinytl & Adam)      | 93.6           |                 |
+| Cifar10(bias & Adam)        | 71.2           |                 |
+| Car196                      | 87.295         |                 |
+| Food101                     | 81.124         |                 |
+| Cifar100                    | 73.242         |                 |
+| CUB200                      | 78.141         |                 |
+| Imagenet                    | 70.241         |                 |
+|                             |                |                 |
 
 # Strategy Compare
 
@@ -158,98 +126,22 @@ blue curve: seperate lr
 ![image-20211125201352556](./pic/image-20211125201352556.png)
 No doubt Fine-tuning last-3 is a bad choice for MobileNetV2 in CIFAR!
 
-## L2-sp
+## tinytl(CIFAR10)
 
-https://arxiv.org/pdf/1802.01483.pdf
+## memory cost
 
-The article above shows that when we use L2 normalization in fin tune. We might need to change its form.
+Batchsize = 1,model: MobileNetV2
 
-![image-20211126011416359](./pic/image-20211126011416359.png)
+| Method  | activation cost(batch size = 1, n_groups = 2) | activation cost(batch size = 64, n_groups = 2) |
+| ------- | --------------------------------------------- | ---------------------------------------------- |
+| FT-Full | 1756MB                                        | 6225MB                                         |
+| TinyTL  | 1115MB                                        | 5725MB                                         |
+| FT-Last | 1157MB                                        |                                                |
+|         |                                               |                                                |
 
-So I rewrite optimizer
+## curve
 
-```python
-class l2sp(Optimizer):
-    def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8,
-                weight_decay=0, amsgrad=False):
-        defaults = dict(lr=lr, betas=betas, eps=eps,
-                        weight_decay=weight_decay, amsgrad=amsgrad)
-        self.oldparam = params
-        super(l2sp, self).__init__(params, defaults)
-
-    def __setstate__(self, state):
-        super(l2sp, self).__setstate__(state)
-        for group in self.param_groups:
-            group.setdefault('amsgrad', False)
-
-    @torch.no_grad()
-    def step(self, closure=None):
-        loss = None
-        if closure is not None:
-            with torch.enable_grad():
-                loss = closure()
-
-        for group in self.param_groups:
-            params_with_grad = []
-            grads = []
-            old_params_with_grad = []
-            for p in group['params']:
-                if p.grad is not None:
-                    params_with_grad.append(p)
-                    if p.grad.is_sparse:
-                        raise RuntimeError(
-                            'Adam does not support sparse gradients, please consider SparseAdam instead')
-                    grads.append(p.grad)
-                    state = self.state[p]
-                    # Lazy state initialization
-                    if len(state) == 0:
-                        state['step'] = 0
-                
-            for q in self.oldparam:
-                if q.grad is not None:
-                    old_params_with_grad.append(p)
-
-
-
-            l2sp_adam(params_with_grad,
-                   grads,
-                   lr=group['lr'],
-                   weight_decay=group['weight_decay'],
-                   l2sp = old_params_with_grad)
-        return loss
-def l2sp_adam(params: List[Tensor],
-         grads: List[Tensor],
-         lr: float,
-         weight_decay: float,
-          l2sp=0):
-
-    for i, param in enumerate(params):
-
-        grad = grads[i]
-
-        if weight_decay != 0 and l2sp != 0:
-            grad = grad.add(l2sp[i], alpha=weight_decay)
-
-
-        step = grad * lr 
-        param.add_(step)
-```
-
-It shows really good results. In CIFAR10, this technique helps improve a lot comparing to seperate lr! :)
-
-It could be regarded as L1 and L2 normalization.( which L1 has a special value)
-
-Light Blue curve: L2-sp
-
-blue curve : seperate lr
-
-### CIFAR10
-
-![image-20211126135755928](./pic/image-20211126135755928.png)
-
-### CUB200
-
-![image-20211126150210362](./pic/image-20211126150210362.png)
+![image-20211203014319585](/Users/catbeta/Documents/ml/fintune/pic/image-20211203014319585.png)
 
 # Train-from-scratch vs Fintune
 
