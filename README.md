@@ -1,10 +1,14 @@
+---
+typora-copy-images-to: ./pic
+---
+
 # Report of Finetune
 
 # Menu
 - [Report of Finetune](#report-of-finetune)
 - [Menu](#menu)
 - [Settings](#settings)
-- [Results(separate lr strategy)](#resultsseparate-lr-strategy)
+- [Results(separate or strategy)](#resultsseparate-lr-strategy)
   - [Table](#table)
 - [Strategy Compare](#strategy-compare)
   - [Standard Fine-tuning vs Separate Lr](#standard-fine-tuning-vs-separate-lr)
@@ -13,7 +17,7 @@
     - [CUB200](#cub200)
   - [Separate Lr vs Fine-tuning last-3](#separate-lr-vs-fine-tuning-last-3)
     - [CIFAR10](#cifar10-1)
-  - [tinytl, FT-Last(CIFAR10)](#tinytl-ft-lastcifar10)
+  - [tinyl, FT-Last(CIFAR10)](#tinytl-ft-lastcifar10)
     - [memory cost](#memory-cost)
     - [curve](#curve)
     - [arch](#arch)
@@ -30,13 +34,13 @@ Arch: MobileNetV2
 
 Dataset:CIFAR10,CUB200,CAR196,FOOD101,CIFAR100
 
-Strategy: Finetune the whole layer, finetune last-3-layers, feature extractor, tinytl, separate lr
+Strategy: Finetune the whole layer, finetune last-3-layers, feature extractor, tinytl, separate LR
 
 Pretrained model: Imagenet
 
 Method: reinitialize classifiers
 
-# Results(separate lr strategy)
+# Results(separate strategy)
 
 ## Table
 
@@ -55,7 +59,7 @@ Method: reinitialize classifiers
 
 # Strategy Compare
 
-Since Imagenet is too slow to train, I use CIFAR10 to implement these strategy.All parameters are same, lr, weight decay, and others.
+Since Imagenet is too slow to train, I use CIFAR10 to implement these strategy. All parameters are the same, lr, weight decay, and others.
 
 ## Standard Fine-tuning vs Separate Lr 
 
@@ -84,9 +88,9 @@ separate lr
 
 ### CIFAR10
 
-Blue curve:separate lr 
+Blue curve: separate LR 
 
-Orange curve:Standard Fine-tuning
+Orange curve: Standard Fine-tuning
 
 ![image-20211125112331630](./pic/image-20211125112331630.png)
 
@@ -94,7 +98,7 @@ Orange curve:Standard Fine-tuning
 
 ### CUB200
 
-Pink curve: separate lr 
+Pink curve: separate LR 
 
 Green curve: Standard Fine-tuning
 
@@ -102,9 +106,9 @@ Green curve: Standard Fine-tuning
 
 ![image-20211125113844084](./pic/image-20211125113844084.png)
 
-It could be infer that using seperate lr, which is small lr for deep layers gets better results in validation datasets comparing to Standard Fine-tuning.
+It could be inferred that using separate LR, which is small or for deep layers gets better results in validation datasets compared to Standard Fine-tuning.
 
-Which is similar to this article,https://arxiv.org/pdf/1811.08737.pdf.
+This is similar to this article,https://arxiv.org/pdf/1811.08737.pdf.
 
 
 
@@ -112,9 +116,9 @@ Which is similar to this article,https://arxiv.org/pdf/1811.08737.pdf.
 
 ### CIFAR10
 
-green curve:Fine-tuning last-3 
+green curve: Fine-tuning last-3 
 
-blue curve: seperate lr
+blue curve: separate LR
 
 ![image-20211125201352556](./pic/image-20211125201352556.png)
 No doubt Fine-tuning last-3 is a bad choice for MobileNetV2 in CIFAR!
@@ -128,7 +132,7 @@ Batchsize = 1,model: MobileNetV2
 | Method      | activation cost(batch size = 1, n_groups = 2) | activation cost(batch size = 64, n_groups = 2) |
 | ----------- | --------------------------------------------- | ---------------------------------------------- |
 | FT-Full     | 1756MB                                        | 6225MB                                         |
-| TinyTL+last | 815MB                                         | 3125MB                                         |
+| TinyTL+last | 849MB                                         | 3125MB                                         |
 | FT-Last     | 1157MB                                        | 5426MB                                         |
 
 ### curve
@@ -147,15 +151,20 @@ Batchsize = 1,model: MobileNetV2
 
 # Train-from-scratch vs Finetune
 
-In this section, I choose the different layer with separate lr fintune method shown above.
+In this section, I choose the different layers with separate lr finetune method shown above.
 
-## 
+## Train from scratch
+
+### sgd+CosineAnnealingLR
+
+![image-20211203222442092](./pic/image-20211203222442092.png)
 
 
 
 
 
+### Adam+ expdecay
 
+![image-20211203224123667](./pic/image-20211203224123667.png)
 
-## 
-
+I stop this because in epoch 30, lr<1e-5
