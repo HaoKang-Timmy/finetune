@@ -5,31 +5,29 @@ typora-copy-images-to: ./pic
 # Report of Finetune
 
 # Menu
-- [Report of Finetune](#report-of-fintune)
+- [Report of Finetune](#report-of-finetune)
 - [Menu](#menu)
 - [Settings](#settings)
-- [Results(separate lr strategy)](#resultsseperate-lr-strategy)
+- [Results(separate lr strategy)](#resultsseparate-lr-strategy)
   - [Table](#table)
-  - [Curve](#curve)
-    - [CIFAR10](#cifar10)
-    - [CUB200](#cub200)
-    - [Imagenet](#imagenet)
 - [Strategy Compare](#strategy-compare)
   - [Standard Fine-tuning vs Separate Lr](#standard-fine-tuning-vs-separate-lr)
     - [Result](#result)
-    - [CIFAR10](#cifar10-1)
-    - [CUB200](#cub200-1)
+    - [CIFAR10](#cifar10)
+    - [CUB200](#cub200)
   - [Seperate Lr vs Fine-tuning last-3](#seperate-lr-vs-fine-tuning-last-3)
-    - [CIFAR10](#cifar10-2)
-  - [L2-sp](#l2-sp)
-    - [CIFAR10](#cifar10-3)
-    - [CUB200](#cub200-2)
+    - [CIFAR10](#cifar10-1)
+  - [tinytl(CIFAR10)](#tinytlcifar10)
+  - [memory cost](#memory-cost)
+  - [curve](#curve)
+  - [arch](#arch)
+    - [lite-residual](#lite-residual)
+  - [origin backbone](#origin-backbone)
 - [Train-from-scratch vs Fintune](#train-from-scratch-vs-fintune)
   - [Training for Same Epochs](#training-for-same-epochs)
   - [Training for More Epochs](#training-for-more-epochs)
   - [Difference of Two Sets of Parameters](#difference-of-two-sets-of-parameters)
     - [Cos Similarity of Bias](#cos-similarity-of-bias)
-- [tiny tl](#tiny-tl)
 
 
 # Settings
@@ -141,6 +139,16 @@ Batchsize = 1,model: MobileNetV2
 ## curve
 
 ![image-20211203014319585](./pic/image-20211203014319585.png)
+
+## arch
+
+### lite-residual
+
+<img src="./pic/image-20211203181105273.png" alt="image-20211203181105273" style="zoom:50%;" />
+
+## origin backbone
+
+<img src="./pic/image-20211203181432142.png" alt="image-20211203181432142" style="zoom:50%;" />
 
 # Train-from-scratch vs Fintune
 
