@@ -46,17 +46,18 @@ Method: reinitialize classifiers
 
 ## Table
 
-| Dataset                     | Val_acc%(top1) | Test_acc%(top1) |
-| --------------------------- | -------------- | --------------- |
-| Cifar10(whole layer & Adam) | 96.224         |                 |
-| CIfar10(tinytl & Adam)      | 93.6           |                 |
-| Cifar10(bias & Adam)        | 71.2           |                 |
-| Car196                      | 87.295         |                 |
-| Food101                     | 81.124         |                 |
-| Cifar100                    | 73.242         |                 |
-| CUB200                      | 78.141         |                 |
-| Imagenet                    | 70.241         |                 |
-|                             |                |                 |
+| Dataset                     | Val_acc%(top1) |
+| --------------------------- | -------------- |
+| Cifar10(whole layer & Adam) | 96.224         |
+| CIfar10(tinytl & Adam)      | 93.6           |
+| Cifar10(bias & Adam)        | 71.2           |
+| Cifar10(train-from-scratch) | 94.8           |
+| Car196                      | 87.295         |
+| Food101                     | 81.124         |
+| Cifar100                    | 73.242         |
+| CUB200                      | 78.141         |
+| Imagenet                    | 70.241         |
+|                             |                |
 
 # Strategy Compare
 

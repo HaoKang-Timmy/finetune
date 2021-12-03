@@ -151,7 +151,7 @@ def main_worker(gpu, ngpus_per_node, args):
             param.requires_grad = True
         optimizer = torch.optim.Adam(model.parameters(), args.lr,
                                      weight_decay=args.weight_decay)
-    
+
     elif args.train_method == 'low':
         classifier_map = list(map(id, model.classifier.parameters()))
         low_map = list(map(id, model.features[-5:]))
@@ -161,18 +161,18 @@ def main_worker(gpu, ngpus_per_node, args):
         deep_params = filter(lambda p: id(
             p) not in low_map+classifier_map, model.parameters())
         optimizer = torch.optim.Adam([{'params': classifier_params}, {
-                                        'params': low_params, 'lr': args.lr*0.6}, {'params': deep_params, 'lr': args.lr*0.4}], lr=args.lr)
+            'params': low_params, 'lr': args.lr*0.6}, {'params': deep_params, 'lr': args.lr*0.4}], lr=args.lr)
     elif args.train_method == 'deep':
         for param in model.parameters():
             param.requires_grad = True
             optimizer = torch.optim.Adam(model.parameters(), args.lr,
-                                            weight_decay=args.weight_decay)
+                                         weight_decay=args.weight_decay)
     elif args.train_method == 'tinytl':
         for param in model.parameters():
             param.requires_grad = False
         LiteResidualModule.insert_lite_residual(model)
         optimizer = torch.optim.Adam(model.parameters(), args.lr,
-                    weight_decay=args.weight_decay)
+                                     weight_decay=args.weight_decay)
     elif args.train_method == 'bias':
         for param in model.parameters():
             param.requires_grad = False
@@ -181,8 +181,8 @@ def main_worker(gpu, ngpus_per_node, args):
                 print("bias")
                 param.requires_grad = True
         optimizer = torch.optim.Adam(model.parameters(), args.lr,
-                            weight_decay=args.weight_decay)
-            # l2sp_op =l2sp(model.parameters(), lr=args.lr*0.5)
+                                     weight_decay=args.weight_decay)
+        # l2sp_op =l2sp(model.parameters(), lr=args.lr*0.5)
     if not torch.cuda.is_available():
         print('using CPU')
     elif args.distributed:
@@ -301,10 +301,12 @@ def main_worker(gpu, ngpus_per_node, args):
                 writer.add_scalar('loss/val', loss_val, epoch)
                 writer.add_scalar('acc/val', acc1, epoch)
                 train_loss_save = './log/train_bias.txt'
-                file_save1=open(train_loss_save,mode='a')
-                file_save1.write('\n'+'step:'+str(epoch)+'  loss_train:'+str(loss_train)+'  acc1_train:'+str(acc1_train.item())+'  loss_val:'+str(loss_val)+'  acc1_val:'+str(acc1.item()))
+                file_save1 = open(train_loss_save, mode='a')
+                file_save1.write('\n'+'step:'+str(epoch)+'  loss_train:'+str(loss_train)+'  acc1_train:'+str(
+                    acc1_train.item())+'  loss_val:'+str(loss_val)+'  acc1_val:'+str(acc1.item()))
 
                 file_save1.close()
+
 
 if __name__ == '__main__':
     main()

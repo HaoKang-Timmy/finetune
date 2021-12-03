@@ -306,6 +306,7 @@ def l2sp_adam(params: List[Tensor],
     #     param.addcdiv_(exp_avg, denom, value=-step_size)
     pass
 
+
 class LiteResidualModule(nn.Module):
 
     def __init__(self, main_branch, in_channels, out_channels,
@@ -314,15 +315,15 @@ class LiteResidualModule(nn.Module):
         super(LiteResidualModule, self).__init__()
         self.main_branch = main_branch
         self.lite_residual_config = {
-        	'in_channels': in_channels,
-        	'out_channels': out_channels,
-        	'expand': expand,
-        	'kernel_size': kernel_size,
-        	'act_func': act_func,
-        	'n_groups': n_groups,
-        	'downsample_ratio': downsample_ratio,
-        	'upsample_type': upsample_type,
-        	'stride': stride,
+            'in_channels': in_channels,
+            'out_channels': out_channels,
+            'expand': expand,
+            'kernel_size': kernel_size,
+            'act_func': act_func,
+            'n_groups': n_groups,
+            'downsample_ratio': downsample_ratio,
+            'upsample_type': upsample_type,
+            'stride': stride,
         }
         kernel_size = 1 if downsample_ratio is None else kernel_size
         padding = get_same_padding(kernel_size)
@@ -340,27 +341,26 @@ class LiteResidualModule(nn.Module):
         init_models(self.lite_residual)
         self.lite_residual.final_bn.weight.data.zero_()
 
-
     def forward(self, x):
         main_x = self.main_branch(x)
         lite_residual_x = self.lite_residual(x)
         if self.lite_residual_config['downsample_ratio'] is not None:
-        	lite_residual_x = F.upsample(lite_residual_x, main_x.shape[2:],
-        	                             mode=self.lite_residual_config['upsample_type'])
+            lite_residual_x = F.upsample(lite_residual_x, main_x.shape[2:],
+                                         mode=self.lite_residual_config['upsample_type'])
         return main_x + lite_residual_x
 
     @staticmethod
     def insert_lite_residual(net, downsample_ratio=2, upsample_type='bilinear',
-	                         expand=1.0, max_kernel_size=5, act_func='relu', n_groups=2,
-	                         **kwargs):
-        for i in range(1,18):
+                             expand=1.0, max_kernel_size=5, act_func='relu', n_groups=2,
+                             **kwargs):
+        for i in range(1, 18):
             print(i)
             print(net.features[i])
             if i == 1:
-                net.features[i] = LiteResidualModule(net.features[i], in_channels=net.features[i].conv[0][0].in_channels, out_channels= net.features[i].conv[1].out_channels, expand=expand, kernel_size=3,
-						act_func=act_func, n_groups=n_groups, downsample_ratio=downsample_ratio,
-						upsample_type=upsample_type, stride=net.features[i].conv[0][0].stride[1],)
+                net.features[i] = LiteResidualModule(net.features[i], in_channels=net.features[i].conv[0][0].in_channels, out_channels=net.features[i].conv[1].out_channels, expand=expand, kernel_size=3,
+                                                     act_func=act_func, n_groups=n_groups, downsample_ratio=downsample_ratio,
+                                                     upsample_type=upsample_type, stride=net.features[i].conv[0][0].stride[1],)
             else:
-                net.features[i] = LiteResidualModule(net.features[i], in_channels=net.features[i].conv[0][0].in_channels, out_channels= net.features[i].conv[2].out_channels, expand=expand, kernel_size=3,
-						act_func=act_func, n_groups=n_groups, downsample_ratio=downsample_ratio,
-						upsample_type=upsample_type, stride=net.features[i].conv[1][0].stride[1],)
+                net.features[i] = LiteResidualModule(net.features[i], in_channels=net.features[i].conv[0][0].in_channels, out_channels=net.features[i].conv[2].out_channels, expand=expand, kernel_size=3,
+                                                     act_func=act_func, n_groups=n_groups, downsample_ratio=downsample_ratio,
+                                                     upsample_type=upsample_type, stride=net.features[i].conv[1][0].stride[1],)
