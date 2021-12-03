@@ -18,11 +18,11 @@ typora-copy-images-to: ./pic
   - [Seperate Lr vs Fine-tuning last-3](#seperate-lr-vs-fine-tuning-last-3)
     - [CIFAR10](#cifar10-1)
   - [tinytl(CIFAR10)](#tinytlcifar10)
-  - [memory cost](#memory-cost)
-  - [curve](#curve)
-  - [arch](#arch)
-    - [lite-residual](#lite-residual)
-  - [origin backbone](#origin-backbone)
+    - [memory cost](#memory-cost)
+    - [curve](#curve)
+    - [arch](#arch)
+      - [lite-residual](#lite-residual)
+      - [original backbone](#original-backbone)
 - [Train-from-scratch vs Fintune](#train-from-scratch-vs-fintune)
   - [Training for Same Epochs](#training-for-same-epochs)
   - [Training for More Epochs](#training-for-more-epochs)
@@ -126,7 +126,7 @@ No doubt Fine-tuning last-3 is a bad choice for MobileNetV2 in CIFAR!
 
 ## tinytl(CIFAR10)
 
-## memory cost
+### memory cost
 
 Batchsize = 1,model: MobileNetV2
 
@@ -136,17 +136,17 @@ Batchsize = 1,model: MobileNetV2
 | TinyTL+last | 815MB                                         | 3125MB                                         |
 | FT-Last     | 1157MB                                        | 5426MB                                         |
 
-## curve
+### curve
 
 ![image-20211203014319585](./pic/image-20211203014319585.png)
 
-## arch
+### arch
 
-### lite-residual
+#### lite-residual
 
 <img src="./pic/image-20211203181105273.png" alt="image-20211203181105273" style="zoom:50%;" />
 
-## origin backbone
+#### original backbone
 
 <img src="./pic/image-20211203181432142.png" alt="image-20211203181432142" style="zoom:50%;" />
 
