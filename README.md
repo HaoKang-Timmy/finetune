@@ -1,7 +1,3 @@
----
-typora-copy-images-to: ./pic
----
-
 # Report of Finetune
 
 # Menu
@@ -15,19 +11,17 @@ typora-copy-images-to: ./pic
     - [Result](#result)
     - [CIFAR10](#cifar10)
     - [CUB200](#cub200)
-  - [Seperate Lr vs Fine-tuning last-3](#seperate-lr-vs-fine-tuning-last-3)
+  - [Separate Lr vs Fine-tuning last-3](#separate-lr-vs-fine-tuning-last-3)
     - [CIFAR10](#cifar10-1)
-  - [tinytl(CIFAR10)](#tinytlcifar10)
+  - [tinytl, FT-Last(CIFAR10)](#tinytl-ft-lastcifar10)
     - [memory cost](#memory-cost)
     - [curve](#curve)
     - [arch](#arch)
       - [lite-residual](#lite-residual)
       - [original backbone](#original-backbone)
-- [Train-from-scratch vs Fintune](#train-from-scratch-vs-fintune)
-  - [Training for Same Epochs](#training-for-same-epochs)
-  - [Training for More Epochs](#training-for-more-epochs)
-  - [Difference of Two Sets of Parameters](#difference-of-two-sets-of-parameters)
-    - [Cos Similarity of Bias](#cos-similarity-of-bias)
+- [Train-from-scratch vs Finetune](#train-from-scratch-vs-finetune)
+  - [](#)
+  - [](#-1)
 
 
 # Settings
@@ -114,18 +108,18 @@ Which is similar to this article,https://arxiv.org/pdf/1811.08737.pdf.
 
 
 
-## Seperate Lr vs Fine-tuning last-3 
+## Separate Lr vs Fine-tuning last-3 
 
 ### CIFAR10
 
-green curve:fFine-tuning last-3 
+green curve:Fine-tuning last-3 
 
 blue curve: seperate lr
 
 ![image-20211125201352556](./pic/image-20211125201352556.png)
 No doubt Fine-tuning last-3 is a bad choice for MobileNetV2 in CIFAR!
 
-## tinytl(CIFAR10)
+## tinytl, FT-Last(CIFAR10)
 
 ### memory cost
 
@@ -139,7 +133,7 @@ Batchsize = 1,model: MobileNetV2
 
 ### curve
 
-![image-20211203014319585](./pic/image-20211203014319585.png)
+![image-20211203214352576](./pic/image-20211203214352576.png)
 
 ### arch
 
@@ -151,38 +145,17 @@ Batchsize = 1,model: MobileNetV2
 
 <img src="./pic/image-20211203181432142.png" alt="image-20211203181432142" style="zoom:50%;" />
 
-# Train-from-scratch vs Fintune
+# Train-from-scratch vs Finetune
 
-In this section, I choose the different layer with seperate lr fintune method shown above.
+In this section, I choose the different layer with separate lr fintune method shown above.
 
-## Training for Same Epochs
-
-red curve: train-from-scratch
-
-Blue curve: fintune
-
-![image-20211125131055325](./pic/image-20211125131055325.png)
+## 
 
 
 
-Using same learning rate decay strategy(exp decay), we can not get similar results.
 
-## Training for More Epochs
 
-However, when I try to continue training, it seems to stop to grow.
 
-![image-20211125143520267](./pic/image-20211125143520267.png)
 
-![image-20211125143603418](./pic/image-20211125143603418.png)
+## 
 
-Then I try to use these two sets of parameters to analyze the difference.
-
-## Difference of Two Sets of Parameters
-
-### Cos Similarity of Bias
-
-![image-20211125200847772](./pic/image-20211125200847772.png)
-
-It shows that ony classifier bias of training from scratch is similar to fintune model parameters.
-
-However I still need a technique to analyse weight(tensors), it is to be done
