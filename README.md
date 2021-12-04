@@ -1,7 +1,3 @@
----
-typora-copy-images-to: ./pic
----
-
 # Report of Finetune
 
 # Menu
