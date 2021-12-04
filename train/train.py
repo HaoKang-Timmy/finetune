@@ -3,7 +3,7 @@ import os
 import random
 import warnings
 from dataset.dataset_collection import DatasetCollection
-from fintune.train.utils import LiteResidualModule
+from utils import LiteResidualModule
 from vision.vision_class import AverageMeter, ProgressMeter
 from utils import train, validate, adjust_learning_rate, save_checkpoint, prepare_dataloader
 import torch
