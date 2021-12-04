@@ -149,6 +149,10 @@ Batchsize = 1,model: MobileNetV2
 
 <img src="./pic/image-20211203181432142.png" alt="image-20211203181432142" style="zoom:50%;" />
 
+
+
+
+
 # Train-from-scratch vs Finetune
 
 In this section, I choose the different layers with separate lr finetune method shown above.
@@ -168,3 +172,70 @@ In this section, I choose the different layers with separate lr finetune method 
 ![image-20211203224123667](./pic/image-20211203224123667.png)
 
 I stop this because in epoch 30, lr<1e-5
+
+Why Adam is worse than sgd?
+
+![image-20211204234315205](./pic/image-20211204234315205.png)
+
+You could find that if we get line 6,7,8 into 12
+
+![image-20211204234406527](./pic/image-20211204234406527.png)
+
+# gradient-checkpoint
+
+## code
+
+```python
+class CheckpointFunction(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, run_function, length, *args):
+        ctx.run_function = run_function
+        ctx.input_tensors = list(args[:length])
+        ctx.input_params = list(args[length:])
+        with torch.no_grad():
+            output_tensors = ctx.run_function(*ctx.input_tensors)
+        return output_tensors
+
+    @staticmethod
+    def backward(ctx, *output_grads):
+        for i in range(len(ctx.input_tensors)):
+            temp = ctx.input_tensors[i]
+            ctx.input_tensors[i] = temp.detach()
+            ctx.input_tensors[i].requires_grad = temp.requires_grad
+        with torch.enable_grad():
+            output_tensors = ctx.run_function(*ctx.input_tensors)
+        input_grads = torch.autograd.grad(output_tensors, ctx.input_tensors + ctx.input_params, output_grads, allow_unused=True)
+        return (None, None) + input_grads
+```
+
+```python
+class checkpoint_segment(nn.Module):
+    def __init__(self,segment) -> None:
+        super(checkpoint_segment,self).__init__()
+        self.segment = segment
+    def forward(self,x):
+        if x.requires_grad == False:
+            print("could not use checkpoint at this segment")
+        x = checkpoint(self.segment,x)
+        return x
+    @staticmethod
+    def insert_checkpoint(segment):
+        segment = checkpoint_segment(segment)
+        return segment
+```
+
+
+
+## result
+
+Model:MobileNetV2
+
+inputsize:3*224 *224
+
+Implement checkpoint to all InvertedResidual block
+
+| batch_size | memory cost(before) | memory cost(after) |
+| ---------- | ------------------- | ------------------ |
+| 1          | 923MB               | 877MB              |
+| 16         | 2183MB              | 1473MB             |
+
