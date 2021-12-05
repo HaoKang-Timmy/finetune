@@ -1,4 +1,6 @@
-# Experiment
+
+
+# TinyTL
 
 ## 1 Setup
 
@@ -8,7 +10,7 @@ Following the common practice, we use ImageNet as the pretraining dataset and tr
 
 ## 1.2 Model Architecture
 
-Though TInyTL provides ProxylessNAS-Mobile, I choose MobileNetV2 as my backbone. For each InvertedResidual Block, we inserted with a lite residual module presented in https://proceedings.neurips.cc/paper/2020/file/81f7acabd411274fcf65ce2070ed568a-Paper.pdf. The group size is 2, and the kernel size is 5. The residual module code is shown below.
+Though TInyTL provides ProxylessNAS-Mobile, I choose MobileNetV2 as my backbone. For each InvertedResidual Block, we inserted with a lite residual module presented in https://proceedings.neurips.cc/paper/2020/file/81f7acabd411274fcf65ce2070ed568a-Paper.pdf. The group size is 2, and the kernel size is 3. The residual module code is shown below.
 
 ```python
 class LiteResidualModule(nn.Module):
@@ -55,24 +57,13 @@ class LiteResidualModule(nn.Module):
         return main_x + lite_residual_x
 ```
 
-To implement it, we design a function
+To implement it, we design an API function.
 
 ```python
     @staticmethod
     def insert_lite_residual(net, downsample_ratio=2, upsample_type='bilinear',
                              expand=1.0, max_kernel_size=5, act_func='relu', n_groups=2,
-                             **kwargs):
-        for i in range(1, 18):
-            print(i)
-            print(net.features[i])
-            if i == 1:
-                net.features[i] = LiteResidualModule(net.features[i], in_channels=net.features[i].conv[0][0].in_channels, out_channels=net.features[i].conv[1].out_channels, expand=expand, kernel_size=3,
-                                                     act_func=act_func, n_groups=n_groups, downsample_ratio=downsample_ratio,
-                                                     upsample_type=upsample_type, stride=net.features[i].conv[0][0].stride[1],)
-            else:
-                net.features[i] = LiteResidualModule(net.features[i], in_channels=net.features[i].conv[0][0].in_channels, out_channels=net.features[i].conv[2].out_channels, expand=expand, kernel_size=3,
-                                                     act_func=act_func, n_groups=n_groups, downsample_ratio=downsample_ratio,
-                                                     upsample_type=upsample_type, stride=net.features[i].conv[1][0].stride[1],)
+                             **kwargs)
 
 ```
 
@@ -93,7 +84,7 @@ Training Details. We freeze the memory-heavy modules (weights of the feature ext
     │   ├── __pycache__
     │   └── dataset_collection.py
     ├── gradient_checkpoint
-    │   ├── test.py
+    │   ├── example.py
     │   └── utils.py
     ├── log
     │   ├── train.txt
@@ -148,14 +139,14 @@ Change [method], [CIFAR_DATAPATH] to what it should be.
 
 Comparison between TinyTL and conventional transfer learning methods. For object classification datasets, we report the top1 accuracy. ‘B’ represents Bias while ‘L’ represents LiteResidual. *FT-Last* represents only the last layer is fine-tuned. *FT-Norm+Last* represents normalization layers and the last layers are fine-tuned. *FT-Full* represents the full network is fine-tuned. The backbone neural network is MobileNetV2, and the resolution is 224. TinyTL consistently outperforms *FT-Last* and *FT-Norm+Last*.
 
-| Method       | Dataset | Train accuracy(top1) |
-| ------------ | ------- | -------------------- |
-| FT-Last      | CIFAR10 | 72.9%                |
-| TinyTL-B     | CIFAR10 | 73.8%                |
-| TinyTL-L     | CIFAR10 | 93.7%                |
-| TinyTL-L+B   | CIFAR10 | 92.6%                |
-| FT-Norm+Last | CIFAR10 | 73.84%               |
-| FT-Full      | CIFAR10 | 96.16%               |
+| Method       | Dataset | Memory cost | Train accuracy(top1) |
+| ------------ | ------- | ----------- | -------------------- |
+| FT-Last      | CIFAR10 | 3957MB      | 72.9%                |
+| TinyTL-B     | CIFAR10 | 3324MB      | 73.8%                |
+| TinyTL-L     | CIFAR10 | 3101MB      | 93.7%                |
+| TinyTL-L+B   | CIFAR10 | 3196MB      | 92.6%                |
+| FT-Norm+Last | CIFAR10 | 4016MB      | 73.84%               |
+| FT-Full      | CIFAR10 | 5192MB      | 96.16%               |
 
 
 
@@ -163,4 +154,93 @@ Comparison between TinyTL and conventional transfer learning methods. For object
 
 ![image-20211206012154928](./pic/image-20211206012154928.png)
 
-Top1 accuracy,loss of different trasfer learning methods. TinyTL-L and TinyTL-L+B has similar results with Finetune Full layers
+Top1 accuracy,loss of different trasfer learning methods. TinyTL-L and TinyTL-L+B has similar results with Finetune Full layers.
+
+## 3 Conclusion
+
+TinyTL is a sufficient way of fine-tune with a little sacrifice. It provides an idea that freeze most parameters to save activation memory and using downsample techniques to save training memory. Also, adding residual block is a way of providing new backbone of model, which supports for its accuracy.
+
+# Gradient Checkpoint
+
+## 1 Setup
+
+I use two pytorch mechanisms to implement gradient checkpoint. The first one is provided by official pytorchhttps://pytorch.org/docs/stable/checkpoint.html. And second way is to use `torch.autograd.Function` . As for this gradient checkpoint, it is analyzed in this paper https://arxiv.org/abs/1604.06174.
+
+## 2 Code and Usage
+
+Two implementations are shown below
+
+## 2.1 Checkpoint Package
+
+```python
+class checkpoint_segment(nn.Module):
+    def __init__(self, segment) -> None:
+        super(checkpoint_segment, self).__init__()
+        self.segment = segment
+
+    def forward(self, x):
+        if x.requires_grad == False:
+            print("could not use checkpoint at this segment")
+        x = checkpoint(self.segment, x)
+        return x
+
+    @staticmethod
+    def insert_checkpoint(segment):
+        segment = checkpoint_segment(segment)
+        return segment
+```
+
+As for Usage, 
+
+```python
+model_segment = checkpoint_segment.insert_checkpoint(model_segment)
+```
+
+`model_segment` is the part that you need to set checkpoint, you could see `./train/gradient_checkpoint/example.py` for more informations.
+
+## 2.2 Autograd Implementation
+
+```python
+class CheckpointFunction(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, run_function, length, *args):
+        ctx.run_function = run_function
+        ctx.input_tensors = list(args[:length])
+        ctx.input_params = list(args[length:])
+        with torch.no_grad():
+            output_tensors = ctx.run_function(*ctx.input_tensors)
+        return output_tensors
+
+    @staticmethod
+    def backward(ctx, *output_grads):
+        for i in range(len(ctx.input_tensors)):
+            temp = ctx.input_tensors[i]
+            ctx.input_tensors[i] = temp.detach()
+            ctx.input_tensors[i].requires_grad = temp.requires_grad
+        with torch.enable_grad():
+            output_tensors = ctx.run_function(*ctx.input_tensors)
+        input_grads = torch.autograd.grad(
+            output_tensors, ctx.input_tensors + ctx.input_params, output_grads, allow_unused=True)
+        return (None, None) + input_grads
+```
+
+As for Usage
+
+```python
+CheckpointFunction.apply(run_function,input,args)
+```
+
+run_function is a `torch.utils.Function` object, `input` is input tensors for this function, `args` are others you need when in backward.
+
+## 3 Results
+
+I use MobileNetV2 as my backbone, Also, I set checkpoint at each InversResidual Block. You could see more information in `./train/gradient_checkpoint/example.py`.
+
+| Batchsize | Memory cost(without checkpoint) | Memory cost(with checkpoint) |
+| --------- | ------------------------------- | ---------------------------- |
+| 1         | 821MB                           | 817MB                        |
+| 8         | 1318MB                          | 912MB                        |
+| 16        | 2105MB                          | 1393MB                       |
+| 32        | 3541MB                          | 2119MB                       |
+| 64        | 7492MB                          | 3291MB                       |
+
