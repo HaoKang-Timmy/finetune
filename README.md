@@ -227,7 +227,7 @@ As for Usage
 CheckpointFunction.apply(run_function,input,args)
 ```
 
-run_function is a `torch.utils.Function` object, `input` is input tensors for this function, `args` are others you need when in backward.
+run_function is a `torch.utils.Function` object, `input` is input tensors for this function, `args` are others you need when in backward(could be ignored).
 
 ## 3 Results
 
