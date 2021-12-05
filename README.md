@@ -161,7 +161,7 @@ TinyTL is a sufficient way of fine-tuning with a little sacrifice. It provides a
 
 ## 1 Setup
 
-I use two PyTorch mechanisms to implement gradient checkpoint. The first one is provided by the official pytorchhttps://pytorch.org/docs/stable/checkpoint.html. And the second way is to use a `torch.autograd.Function` . As for this gradient checkpoint, it is analyzed in this paper https://arxiv.org/abs/1604.06174.
+I use two PyTorch mechanisms to implement gradient checkpoint. The first one is provided by the official pytorch https://pytorch.org/docs/stable/checkpoint.html. And the second way is to use a `torch.autograd.Function` . As for this gradient checkpoint, it is analyzed in this paper https://arxiv.org/abs/1604.06174.
 
 ## 2 Code and Usage
 
