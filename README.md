@@ -6,11 +6,11 @@
 
 ## 1.1 Dataset
 
-Following the common practice, we use ImageNet as the pretraining dataset and transfer it to the CIFAR10 classification task. We use parameters provided on torchvision.
+Following the common practice, I use ImageNet as the pretraining dataset and transfer it to the CIFAR10 classification task. I use parameters provided on torchvision.
 
 ## 1.2 Model Architecture
 
-Though TInyTL provides ProxylessNAS-Mobile, I choose MobileNetV2 as my backbone. For each InvertedResidual Block, we inserted with a lite residual module presented in https://proceedings.neurips.cc/paper/2020/file/81f7acabd411274fcf65ce2070ed568a-Paper.pdf. The group size is 2, and the kernel size is 3. The residual module code is shown below.
+Though TInyTL provides ProxylessNAS-Mobile, I choose MobileNetV2 as my backbone. For each InvertedResidual Block, I inserted with a lite residual module presented in https://proceedings.neurips.cc/paper/2020/file/81f7acabd411274fcf65ce2070ed568a-Paper.pdf. The group size is 2, and the kernel size is 3. The residual module code is shown below.
 
 ```python
 class LiteResidualModule(nn.Module):
@@ -57,7 +57,7 @@ class LiteResidualModule(nn.Module):
         return main_x + lite_residual_x
 ```
 
-To implement it, we design an API function for inserting lite residual for all InverseResidual Blocks in MobileNetV2.
+To implement it, I design an API function for inserting lite residual for all InverseResidual Blocks in MobileNetV2.
 
 ```python
     @staticmethod
@@ -67,7 +67,7 @@ To implement it, we design an API function for inserting lite residual for all I
 
 ```
 
-Also, we changed bn to gn for small batchs training.
+Also, I changed bn to gn for small batchs training.
 
 ```python
 replace_bn_with_gn(net, gn_channel_per_group=8)
@@ -77,7 +77,7 @@ replace_bn_with_gn(net, gn_channel_per_group=8)
 
 ## 1.3 Training Details
 
-Training Details. We freeze the memory-heavy modules (weights of the feature extractor) and only update memory-efficient modules (bias, lite residual, classifier head) during transfer learning. The models are fine-tuned for 40 epochs using the AdamW optimizer with 8 batches on 4 GPUs. The initial learning rate is set to be 4e-4 with exp_decay scheduler(gamma = 0.9)
+Training Details. I freeze the memory-heavy modules (weights of the feature extractor) and only update memory-efficient modules (bias, lite residual, classifier head) during transfer learning. The models are fine-tuned for 40 epochs using the AdamW optimizer with 8 batches on 4 GPUs. The initial learning rate is set to be 4e-4 with exp_decay scheduler(gamma = 0.9)
 
 ## 1.4 Usage
 
@@ -145,7 +145,7 @@ Change [method], [CIFAR_DATAPATH] to what it should be.
 
 ## 2.1 Table
 
-Comparison between TinyTL and conventional transfer learning methods. For object classification datasets, we report the top1 accuracy. ‘B’ represents Bias while ‘L’ represents LiteResidual. *FT-Last* represents only the last layer is fine-tuned. *FT-Norm+Last* represents normalization layers and the last layers are fine-tuned. *FT-Full* represents the full network is fine-tuned. The backbone neural network is MobileNetV2, and the resolution is 224. TinyTL consistently outperforms *FT-Last* and *FT-Norm+Last*.
+Comparison between TinyTL and conventional transfer learning methods. For object classification datasets, I report the top1 accuracy. ‘B’ represents Bias while ‘L’ represents LiteResidual. *FT-Last* represents only the last layer is fine-tuned. *FT-Norm+Last* represents normalization layers and the last layers are fine-tuned. *FT-Full* represents the full network is fine-tuned. The backbone neural network is MobileNetV2, and the resolution is 224. TinyTL consistently outperforms *FT-Last* and *FT-Norm+Last*.
 
 | Method       | Dataset | Memory cost | Train accuracy(top1) |
 | ------------ | ------- | ----------- | -------------------- |
