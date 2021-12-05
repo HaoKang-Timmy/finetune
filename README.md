@@ -1,3 +1,7 @@
+---
+typora-copy-images-to: ./pic
+---
+
 # Report of Finetune
 
 # Menu
@@ -59,9 +63,9 @@ Method: reinitialize classifiers
 
 # Strategy Compare
 
-Since Imagenet is too slow to train, I use CIFAR10 to implement these strategy. All parameters are the same, lr, weight decay, and others.
+Since Imagenet is too slow to train, I use CIFAR10 to implement these strategys. All parameters are the same, lr, weight decay, and others.
 
-## Standard Fine-tuning vs Separate Lr 
+## Standard Fine-tuning(finetune whole layers) vs Separate Lr 
 
 Standard Fine-tuning
 
@@ -123,11 +127,60 @@ blue curve: separate LR
 ![image-20211125201352556](./pic/image-20211125201352556.png)
 No doubt Fine-tuning last-3 is a bad choice for MobileNetV2 in CIFAR!
 
-## tinytl, FT-Last(CIFAR10)
+## Tinytl, FT-Last(CIFAR10)
+
+### code
+
+```python
+class LiteResidualModule(nn.Module):
+
+    def __init__(self, main_branch, in_channels, out_channels,
+                 expand=1.0, kernel_size=3, act_func='relu', n_groups=2,
+                 downsample_ratio=2, upsample_type='bilinear', stride=1):
+        super(LiteResidualModule, self).__init__()
+        self.main_branch = main_branch
+        self.lite_residual_config = {
+            'in_channels': in_channels,
+            'out_channels': out_channels,
+            'expand': expand,
+            'kernel_size': kernel_size,
+            'act_func': act_func,
+            'n_groups': n_groups,
+            'downsample_ratio': downsample_ratio,
+            'upsample_type': upsample_type,
+            'stride': stride,
+        }
+        kernel_size = 1 if downsample_ratio is None else kernel_size
+        padding = get_same_padding(kernel_size)
+        pooling = nn.AvgPool2d(downsample_ratio, downsample_ratio, 0)
+        num_mid = make_divisible(int(in_channels * expand), divisor=8)
+        self.lite_residual = nn.Sequential(OrderedDict({
+            'pooling': pooling,
+            'conv1': nn.Conv2d(in_channels, num_mid, kernel_size, stride, padding, groups=n_groups, bias=False),
+            'bn1': nn.BatchNorm2d(num_mid),
+            'act': build_activation(act_func),
+            'conv2': nn.Conv2d(num_mid, out_channels, 1, 1, 0, bias=False),
+            'final_bn': nn.BatchNorm2d(out_channels),
+        }))
+        init_models(self.lite_residual)
+        self.lite_residual.final_bn.weight.data.zero_()
+
+    def forward(self, x):
+        main_x = self.main_branch(x)
+        lite_residual_x = self.lite_residual(x)
+        if self.lite_residual_config['downsample_ratio'] is not None:
+            lite_residual_x = F.upsample(lite_residual_x, main_x.shape[2:],
+                                         mode=self.lite_residual_config['upsample_type'])
+        return main_x + lite_residual_x
+```
+
+
 
 ### memory cost
 
-Batchsize = 1,model: MobileNetV2
+model: MobileNetV2
+
+method: lite-residual
 
 | Method      | activation cost(batch size = 1, n_groups = 2) | activation cost(batch size = 64, n_groups = 2) |
 | ----------- | --------------------------------------------- | ---------------------------------------------- |
@@ -149,7 +202,7 @@ Batchsize = 1,model: MobileNetV2
 
 <img src="./pic/image-20211203181432142.png" alt="image-20211203181432142" style="zoom:50%;" />
 
-
+MobileNetV2 has 18 InvertedResidual block, each one is inserted with residual block.
 
 
 
@@ -163,7 +216,7 @@ In this section, I choose the different layers with separate lr finetune method 
 
 ![image-20211203222442092](./pic/image-20211203222442092.png)
 
-
+Now training accuracy is similiar to fine-tune accuracy(96.1%). 
 
 
 
@@ -171,7 +224,7 @@ In this section, I choose the different layers with separate lr finetune method 
 
 ![image-20211203224123667](./pic/image-20211203224123667.png)
 
-I stop this because in epoch 30, lr<1e-5
+I stop this because in epoch 30, lr<1e-5.
 
 Why Adam is worse than sgd?
 
@@ -180,6 +233,12 @@ Why Adam is worse than sgd?
 You could find that if we get line 6,7,8 into 12
 
 ![image-20211204234406527](./pic/image-20211204234406527.png)
+
+The reason is that, Adam set different parameters with different decay rate, which is not appropriate. However, using Adamw can fix this.
+
+![image-20211205121416203](./pic/image-20211205121416203.png)
+
+AdamW, with the same parameters, wins 0.6% more accuracy in val_acc.
 
 # gradient-checkpoint
 
