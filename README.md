@@ -67,7 +67,7 @@ To implement it, we design an API function for inserting lite residual for all I
 
 ```
 
-Also we changed bn to gn for small batchs training.
+Also, we changed bn to gn for small batchs training.
 
 ```python
 replace_bn_with_gn(net, gn_channel_per_group=8)
@@ -77,7 +77,7 @@ replace_bn_with_gn(net, gn_channel_per_group=8)
 
 ## 1.3 Training Details
 
-Training Details. We freeze the memory-heavy modules (weights of the feature extractor) and only update memory-efficient modules (bias, lite residual, classifier head) during transfer learning. The models are fine-tuned for 40 epochs using te AdamW optimizer with 8 batches on 4 GPUs. The initial learning rate is set to be 4e-4 with exp_decay scheduler(gamma = 0.9)
+Training Details. We freeze the memory-heavy modules (weights of the feature extractor) and only update memory-efficient modules (bias, lite residual, classifier head) during transfer learning. The models are fine-tuned for 40 epochs using the AdamW optimizer with 8 batches on 4 GPUs. The initial learning rate is set to be 4e-4 with exp_decay scheduler(gamma = 0.9)
 
 ## 1.4 Usage
 
@@ -162,17 +162,17 @@ Comparison between TinyTL and conventional transfer learning methods. For object
 
 ![image-20211206012154928](./pic/image-20211206012154928.png)
 
-Top1 accuracy,loss of different trasfer learning methods. TinyTL-L and TinyTL-L+B has similar results with Finetune Full layers.
+Top1 accuracy, loss of different transfer learning methods. TinyTL-L and TinyTL-L+B have similar results with Finetune Full layers.
 
 ## 3 Conclusion
 
-TinyTL is a sufficient way of fine-tune with a little sacrifice. It provides an idea that freeze most parameters to save activation memory and using downsample techniques to save training memory. Also, adding residual block is a way of providing new backbone of model, which supports for its accuracy.
+TinyTL is a sufficient way of fine-tuning with a little sacrifice. It provides an idea that freezes most parameters to save activation memory and uses downsample techniques to save training memory. Also, adding residual block is a way of providing a new backbone of the model, which supports its accuracy.
 
 # Gradient Checkpoint
 
 ## 1 Setup
 
-I use two pytorch mechanisms to implement gradient checkpoint. The first one is provided by official pytorchhttps://pytorch.org/docs/stable/checkpoint.html. And second way is to use `torch.autograd.Function` . As for this gradient checkpoint, it is analyzed in this paper https://arxiv.org/abs/1604.06174.
+I use two PyTorch mechanisms to implement gradient checkpoint. The first one is provided by the official pytorchhttps://pytorch.org/docs/stable/checkpoint.html. And the second way is to use a `torch.autograd.Function` . As for this gradient checkpoint, it is analyzed in this paper https://arxiv.org/abs/1604.06174.
 
 ## 2 Code and Usage
 
@@ -242,13 +242,13 @@ run_function is a `torch.utils.Function` object, `input` is input tensors for th
 
 ## 3 Results
 
-I use MobileNetV2 as my backbone, Also, I set checkpoint at each InversResidual Block. You could see more information in `./train/gradient_checkpoint/example.py`.
+I use MobileNetV2 as my backbone, Also, I set checkpoints at each InversResidual Block. You could see more information in `./train/gradient_checkpoint/example.py`.
 
-| Batchsize | Memory cost(without checkpoint) | Memory cost(with checkpoint) |
-| --------- | ------------------------------- | ---------------------------- |
-| 1         | 821MB                           | 817MB                        |
-| 8         | 1318MB                          | 912MB                        |
-| 16        | 2105MB                          | 1393MB                       |
-| 32        | 3541MB                          | 2119MB                       |
-| 64        | 7492MB                          | 3291MB                       |
+| Batch size | Memory cost(without checkpoint) | Memory cost(with checkpoint) |
+| ---------- | ------------------------------- | ---------------------------- |
+| 1          | 821MB                           | 817MB                        |
+| 8          | 1318MB                          | 912MB                        |
+| 16         | 2105MB                          | 1393MB                       |
+| 32         | 3541MB                          | 2119MB                       |
+| 64         | 7492MB                          | 3291MB                       |
 
