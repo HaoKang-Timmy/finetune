@@ -85,7 +85,6 @@ Training Details. I freeze the memory-heavy modules and only update memory-effic
 
 ```
 ├── README.md
-├── Untitled.md
 ├── pic
 └── train
     ├── dataset
@@ -98,6 +97,7 @@ Training Details. I freeze the memory-heavy modules and only update memory-effic
     ├── utils.py
     └── vision
         ├── draw_plot.py
+        ├──utils.py
 ```
 
 ### 1.4.2 Command
