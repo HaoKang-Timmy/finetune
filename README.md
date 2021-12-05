@@ -77,7 +77,7 @@ replace_bn_with_gn(net, gn_channel_per_group=8)
 
 ## 1.3 Training Details
 
-Training Details. I freeze the memory-heavy modules (weights of the feature extractor) and only update memory-efficient modules (bias, lite residual, classifier head) during transfer learning. The models are fine-tuned for 40 epochs using the AdamW optimizer with 8 batches on 4 GPUs. The initial learning rate is set to be 4e-4 with exp_decay scheduler(gamma = 0.9)
+Training Details. I freeze the memory-heavy modules and only update memory-efficient modules (bias, lite residual, classifier head) during transfer learning. The models are fine-tuned for 40 epochs using the AdamW optimizer with 8 batches on 4 GPUs. The initial learning rate is set to be 4e-4 with exp_decay scheduler(gamma = 0.9)
 
 ## 1.4 Usage
 
