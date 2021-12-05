@@ -1,135 +1,14 @@
----
-typora-copy-images-to: ./pic
----
+# Experiment
 
-# Report of Finetune
+## 1 Setup
 
-# Menu
-- [Report of Finetune](#report-of-finetune)
-- [Menu](#menu)
-- [Settings](#settings)
-- [Results(separate strategy)](#resultsseparate-strategy)
-  - [Table](#table)
-- [Strategy Compare](#strategy-compare)
-  - [Standard Fine-tuning vs Separate Lr](#standard-fine-tuning-vs-separate-lr)
-    - [Result](#result)
-    - [CIFAR10](#cifar10)
-    - [CUB200](#cub200)
-  - [Separate Lr vs Fine-tuning last-3](#separate-lr-vs-fine-tuning-last-3)
-    - [CIFAR10](#cifar10-1)
-  - [tinytl, FT-Last(CIFAR10)](#tinytl-ft-lastcifar10)
-    - [memory cost](#memory-cost)
-    - [curve](#curve)
-    - [arch](#arch)
-      - [lite-residual](#lite-residual)
-      - [original backbone](#original-backbone)
-- [Train-from-scratch vs Finetune](#train-from-scratch-vs-finetune)
-  - [Train from scratch](#train-from-scratch)
-    - [sgd+CosineAnnealingLR](#sgdcosineannealinglr)
-    - [Adam+ expdecay](#adam-expdecay)
-- [gradient-checkpoint](#gradient-checkpoint)
-  - [code](#code)
-  - [result](#result-1)
+## 1.1 Dataset
 
+Following the common practice, we use ImageNet as the pretraining dataset and transfer it to the CIFAR10 classification task. We use parameters provided on torchvision.
 
-# Settings
+## 1.2 Model Architecture
 
-Arch: MobileNetV2
-
-Dataset:CIFAR10,CUB200,CAR196,FOOD101,CIFAR100
-
-Strategy: Finetune the whole layer, finetune last-3-layers, feature extractor, tinytl, separate LR
-
-Pretrained model: Imagenet
-
-Method: reinitialize classifiers
-
-# Results(separate strategy)
-
-## Table
-
-| Dataset                     | Val_acc%(top1) |
-| --------------------------- | -------------- |
-| Cifar10(whole layer & Adam) | 96.224         |
-| CIfar10(tinytl & Adam)      | 93.6           |
-| Cifar10(bias & Adam)        | 71.2           |
-| Cifar10(train-from-scratch) | 94.8           |
-| Car196                      | 87.295         |
-| Food101                     | 81.124         |
-| Cifar100                    | 73.242         |
-| CUB200                      | 78.141         |
-| Imagenet                    | 70.241         |
-|                             |                |
-
-# Strategy Compare
-
-Since Imagenet is too slow to train, I use CIFAR10 to implement these strategys. All parameters are the same, lr, weight decay, and others.
-
-## Standard Fine-tuning(finetune whole layers) vs Separate Lr 
-
-Standard Fine-tuning
-
-```python
-                optimizer = torch.optim.Adam(model.parameters(), args.lr,
-                                             weight_decay=args.weight_decay)
-```
-
-separate lr 
-
-```python
-            classifier_map = list(map(id, model.classifier.parameters()))
-            low_map = list(map(id, model.features[-5:]))
-            classifier_params = filter(lambda p: id(
-                p) in classifier_map, model.parameters())
-            low_params = filter(lambda p: id(p) in low_map, model.parameters())
-            deep_params = filter(lambda p: id(
-                p) not in low_map+classifier_map, model.parameters())
-            optimizer = torch.optim.Adam([{'params': classifier_params}, {
-                                         'params': low_params, 'lr': args.lr*0.6}, {'params': deep_params, 'lr': args.lr*0.4}], lr=args.lr)
-```
-
-### Result
-
-### CIFAR10
-
-Blue curve: separate LR 
-
-Orange curve: Standard Fine-tuning
-
-![image-20211125112331630](./pic/image-20211125112331630.png)
-
-![image-20211125112353758](./pic/image-20211125112353758.png)
-
-### CUB200
-
-Pink curve: separate LR 
-
-Green curve: Standard Fine-tuning
-
-![image-20211125113624240](./pic/image-20211125113624240.png)
-
-![image-20211125113844084](./pic/image-20211125113844084.png)
-
-It could be inferred that using separate LR, which is small or for deep layers gets better results in validation datasets compared to Standard Fine-tuning.
-
-This is similar to this article,https://arxiv.org/pdf/1811.08737.pdf.
-
-
-
-## Separate Lr vs Fine-tuning last-3 
-
-### CIFAR10
-
-green curve: Fine-tuning last-3 
-
-blue curve: separate LR
-
-![image-20211125201352556](./pic/image-20211125201352556.png)
-No doubt Fine-tuning last-3 is a bad choice for MobileNetV2 in CIFAR!
-
-## Tinytl, FT-Last(CIFAR10)
-
-### code
+Though TInyTL provides ProxylessNAS-Mobile, I choose MobileNetV2 as my backbone. For each InvertedResidual Block, we inserted with a lite residual module presented in https://proceedings.neurips.cc/paper/2020/file/81f7acabd411274fcf65ce2070ed568a-Paper.pdf. The group size is 2, and the kernel size is 5. The residual module code is shown below.
 
 ```python
 class LiteResidualModule(nn.Module):
@@ -164,6 +43,8 @@ class LiteResidualModule(nn.Module):
         }))
         init_models(self.lite_residual)
         self.lite_residual.final_bn.weight.data.zero_()
+        for param in self.lite_residual.parameters():
+            param.requires_grad = True
 
     def forward(self, x):
         main_x = self.main_branch(x)
@@ -174,127 +55,112 @@ class LiteResidualModule(nn.Module):
         return main_x + lite_residual_x
 ```
 
-
-
-### memory cost
-
-model: MobileNetV2
-
-method: lite-residual
-
-| Method      | activation cost(batch size = 1, n_groups = 2) | activation cost(batch size = 64, n_groups = 2) |
-| ----------- | --------------------------------------------- | ---------------------------------------------- |
-| FT-Full     | 1756MB                                        | 6225MB                                         |
-| TinyTL+last | 849MB                                         | 3125MB                                         |
-| FT-Last     | 1157MB                                        | 5426MB                                         |
-
-### curve
-
-![image-20211203214352576](./pic/image-20211203214352576.png)
-
-### arch
-
-#### lite-residual
-
-<img src="./pic/image-20211203181105273.png" alt="image-20211203181105273" style="zoom:50%;" />
-
-#### original backbone
-
-<img src="./pic/image-20211203181432142.png" alt="image-20211203181432142" style="zoom:50%;" />
-
-MobileNetV2 has 18 InvertedResidual block, each one is inserted with residual block.
-
-
-
-# Train-from-scratch vs Finetune
-
-In this section, I choose the different layers with separate lr finetune method shown above.
-
-## Train from scratch
-
-### sgd+CosineAnnealingLR
-
-![image-20211203222442092](./pic/image-20211203222442092.png)
-
-Now training accuracy is similiar to fine-tune accuracy(96.1%). 
-
-
-
-### Adam+ expdecay
-
-![image-20211203224123667](./pic/image-20211203224123667.png)
-
-I stop this because in epoch 30, lr<1e-5.
-
-Why Adam is worse than sgd?
-
-![image-20211204234315205](./pic/image-20211204234315205.png)
-
-You could find that if we get line 6,7,8 into 12
-
-![image-20211204234406527](./pic/image-20211204234406527.png)
-
-The reason is that, Adam set different parameters with different decay rate, which is not appropriate. However, using Adamw can fix this.
-
-![image-20211205121416203](./pic/image-20211205121416203.png)
-
-AdamW, with the same parameters, wins 0.6% more accuracy in val_acc.
-
-# gradient-checkpoint
-
-## code
+To implement it, we design a function
 
 ```python
-class CheckpointFunction(torch.autograd.Function):
     @staticmethod
-    def forward(ctx, run_function, length, *args):
-        ctx.run_function = run_function
-        ctx.input_tensors = list(args[:length])
-        ctx.input_params = list(args[length:])
-        with torch.no_grad():
-            output_tensors = ctx.run_function(*ctx.input_tensors)
-        return output_tensors
+    def insert_lite_residual(net, downsample_ratio=2, upsample_type='bilinear',
+                             expand=1.0, max_kernel_size=5, act_func='relu', n_groups=2,
+                             **kwargs):
+        for i in range(1, 18):
+            print(i)
+            print(net.features[i])
+            if i == 1:
+                net.features[i] = LiteResidualModule(net.features[i], in_channels=net.features[i].conv[0][0].in_channels, out_channels=net.features[i].conv[1].out_channels, expand=expand, kernel_size=3,
+                                                     act_func=act_func, n_groups=n_groups, downsample_ratio=downsample_ratio,
+                                                     upsample_type=upsample_type, stride=net.features[i].conv[0][0].stride[1],)
+            else:
+                net.features[i] = LiteResidualModule(net.features[i], in_channels=net.features[i].conv[0][0].in_channels, out_channels=net.features[i].conv[2].out_channels, expand=expand, kernel_size=3,
+                                                     act_func=act_func, n_groups=n_groups, downsample_ratio=downsample_ratio,
+                                                     upsample_type=upsample_type, stride=net.features[i].conv[1][0].stride[1],)
 
-    @staticmethod
-    def backward(ctx, *output_grads):
-        for i in range(len(ctx.input_tensors)):
-            temp = ctx.input_tensors[i]
-            ctx.input_tensors[i] = temp.detach()
-            ctx.input_tensors[i].requires_grad = temp.requires_grad
-        with torch.enable_grad():
-            output_tensors = ctx.run_function(*ctx.input_tensors)
-        input_grads = torch.autograd.grad(output_tensors, ctx.input_tensors + ctx.input_params, output_grads, allow_unused=True)
-        return (None, None) + input_grads
 ```
 
-```python
-class checkpoint_segment(nn.Module):
-    def __init__(self,segment) -> None:
-        super(checkpoint_segment,self).__init__()
-        self.segment = segment
-    def forward(self,x):
-        if x.requires_grad == False:
-            print("could not use checkpoint at this segment")
-        x = checkpoint(self.segment,x)
-        return x
-    @staticmethod
-    def insert_checkpoint(segment):
-        segment = checkpoint_segment(segment)
-        return segment
+## 1.3 Training Details
+
+Training Details. We freeze the memory-heavy modules (weights of the feature extractor) and only update memory-efficient modules (bias, lite residual, classifier head) during transfer learning. The models are fine-tuned for 40 epochs using te AdamW optimizer with 128 batches on 4 GPUs. The initial learning rate is set to be 4e-4 with exp_decay scheduler(gamma = 0.9)
+
+## 1.4 Usage
+
+## 1.4.1 File structure
+
+```
+├── README.md
+├── Untitled.md
+├── pic
+└── train
+    ├── dataset
+    │   ├── __pycache__
+    │   └── dataset_collection.py
+    ├── gradient_checkpoint
+    │   ├── test.py
+    │   └── utils.py
+    ├── log
+    │   ├── train.txt
+    │   ├── train_adam.txt
+    │   ├── train_sgd.txt
+    │   ├── tune_adamw.txt
+    │   ├── tune_full.txt
+    │   ├── tune_last.txt
+    │   ├── tune_normlast.txt
+    │   ├── tune_tinybias.txt
+    │   ├── tune_tinytl-L+B.txt
+    │   └── tune_tinytl-L.txt
+    ├── train.py
+    ├── utils.py
+    └── vision
+        ├── draw_plot.py
 ```
 
+### 1.4.2 Command
+
+Training file stores in ./train/train.py.
+
+```
+usage: train.py [-h] [-a ARCH] [-j N] [--epochs N] [--start-epoch N] [-b N]
+                [--lr LR] [--momentum M] [--wd W] [-p N] [--resume PATH] [-e]
+                [--pretrained] [--world-size WORLD_SIZE] [--rank RANK]
+                [--dist-url DIST_URL] [--dist-backend DIST_BACKEND]
+                [--seed SEED] [--gpu GPU] [--multiprocessing-distributed]
+                [-type DATASET_TYPE] [--gamma GAMMA] [--tensorboard]
+                [--train-method {deep,low,fintune,bias,TinyTL-L,TinyTL-B,TinyTL-L+B,norm+last}]
+                DIR
+
+```
+
+Print command below for more information
+
+```
+python train.py -h
+```
+
+## 1.4.3 Example
+
+```
+python train.py -a mobilenet_v2 --dist-url 'tcp://127.0.0.1:1234' --dist-backend 'nccl' --multiprocessing-distributed --world-size 1 --rank 0 --seed 1 --tensorboard --train-method [method]  -t CIFAR10 --pretrained  [CIFAR_DATAPATH]
+```
+
+Change [method], [CIFAR_DATAPATH] to what it should be.
+
+## 2 Main Results
+
+## 2.1 Table
+
+Comparison between TinyTL and conventional transfer learning methods. For object classification datasets, we report the top1 accuracy. ‘B’ represents Bias while ‘L’ represents LiteResidual. *FT-Last* represents only the last layer is fine-tuned. *FT-Norm+Last* represents normalization layers and the last layers are fine-tuned. *FT-Full* represents the full network is fine-tuned. The backbone neural network is MobileNetV2, and the resolution is 224. TinyTL consistently outperforms *FT-Last* and *FT-Norm+Last*.
+
+| Method       | Dataset | Train accuracy(top1) |
+| ------------ | ------- | -------------------- |
+| FT-Last      | CIFAR10 | 72.9%                |
+| TinyTL-B     | CIFAR10 | 73.8%                |
+| TinyTL-L     | CIFAR10 | 93.7%                |
+| TinyTL-L+B   | CIFAR10 | 92.6%                |
+| FT-Norm+Last | CIFAR10 | 73.84%               |
+| FT-Full      | CIFAR10 | 96.16%               |
 
 
-## result
 
-Model:MobileNetV2
+<img src="./pic/image-20211206012001543.png" alt="image-20211206012001543" style="zoom: 200%;" />
 
-inputsize:3*224 *224
+![image-20211206012154928](./pic/image-20211206012154928.png)
 
-Implement checkpoint to all InvertedResidual block
-
-| batch_size | memory cost(before) | memory cost(after) |
-| ---------- | ------------------- | ------------------ |
-| 1          | 923MB               | 877MB              |
-| 16         | 2183MB              | 1473MB             |
-
+Top1 accuracy,loss of different trasfer learning methods. TinyTL-L and TinyTL-L+B has similar results with Finetune Full layers

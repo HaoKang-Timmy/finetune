@@ -2,10 +2,7 @@ import argparse
 import os
 import random
 import warnings
-from dataset.dataset_collection import DatasetCollection
-from utils import LiteResidualModule
-from vision.vision_class import AverageMeter, ProgressMeter
-from utils import train, validate, adjust_learning_rate, save_checkpoint, prepare_dataloader
+from utils import train, validate, adjust_learning_rate, save_checkpoint, prepare_dataloader, LiteResidualModule
 import torch
 import torch.nn as nn
 import torch.nn.parallel
@@ -32,7 +29,7 @@ parser.add_argument('-a', '--arch', metavar='ARCH', default='mobilenet_v2',
                     ' (default: resnet18)')
 parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
-parser.add_argument('--epochs', default=90, type=int, metavar='N',
+parser.add_argument('--epochs', default=40, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
@@ -45,7 +42,7 @@ parser.add_argument('--lr', '--learning-rate', default=0.0004, type=float,
                     metavar='LR', help='initial learning rate', dest='lr')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M',
                     help='momentum')
-parser.add_argument('--wd', '--weight-decay', default=0, type=float,
+parser.add_argument('--wd', '--weight-decay', default=5e-4, type=float,
                     metavar='W', help='weight decay (default: 1e-4)',
                     dest='weight_decay')
 parser.add_argument('-p', '--print-freq', default=30, type=int,
@@ -80,7 +77,7 @@ parser.add_argument('--gamma', default=0.9, type=float,
 parser.add_argument('--tensorboard', action='store_true',
                     help='set up a sesion at tensorboard')
 parser.add_argument('--train-method', choices=[
-                    'deep', 'low', 'fintune', 'bias', 'tinytl'], default='fintune', help='choose a training method')
+                    'deep', 'low', 'fintune', 'bias', 'TinyTL-L','TinyTL-B','TinyTL-L+B','norm+last'], default='fintune', help='choose a training method')
 best_acc1 = 0
 
 
@@ -149,9 +146,9 @@ def main_worker(gpu, ngpus_per_node, args):
             param.requires_grad = False
         for param in model.classifier.parameters():
             param.requires_grad = True
-        optimizer = torch.optim.Adam(model.parameters(), args.lr,
+        optimizer = torch.optim.AdamW(model.classifier.parameters(), args.lr,
                                      weight_decay=args.weight_decay)
-
+    
     elif args.train_method == 'low':
         classifier_map = list(map(id, model.classifier.parameters()))
         low_map = list(map(id, model.features[-5:]))
@@ -160,29 +157,55 @@ def main_worker(gpu, ngpus_per_node, args):
         low_params = filter(lambda p: id(p) in low_map, model.parameters())
         deep_params = filter(lambda p: id(
             p) not in low_map+classifier_map, model.parameters())
-        optimizer = torch.optim.Adam([{'params': classifier_params}, {
-            'params': low_params, 'lr': args.lr*0.6}, {'params': deep_params, 'lr': args.lr*0.4}], lr=args.lr)
+        optimizer = torch.optim.AdamW([{'params': classifier_params}, {
+                                        'params': low_params, 'lr': args.lr*0.6}, {'params': deep_params, 'lr': args.lr*0.4}], lr=args.lr,weight_decay=args.weight_decay)
     elif args.train_method == 'deep':
         for param in model.parameters():
             param.requires_grad = True
-            optimizer = torch.optim.Adam(model.parameters(), args.lr,
-                                         weight_decay=args.weight_decay)
-    elif args.train_method == 'tinytl':
+            optimizer = torch.optim.AdamW(model.parameters(), args.lr,
+                                            weight_decay=args.weight_decay)
+    elif args.train_method == 'TinyTL-L':
         for param in model.parameters():
             param.requires_grad = False
+        for param in model.classifier.parameters():
+            param.requires_grad = True
         LiteResidualModule.insert_lite_residual(model)
-        optimizer = torch.optim.Adam(model.parameters(), args.lr,
-                                     weight_decay=args.weight_decay)
-    elif args.train_method == 'bias':
+        optimizer = torch.optim.AdamW(model.parameters(), args.lr,
+                    weight_decay=args.weight_decay)
+    elif args.train_method == 'TinyTL-L+B':
+        for param in model.parameters():
+            param.requires_grad = False
+        for param in model.parameters():
+            param.requires_grad = False
+        for param in model.classifier.parameters():
+            param.requires_grad = True
+        LiteResidualModule.insert_lite_residual(model)
+        for name, param in model.named_parameters():
+            if 'bias' in name:
+                param.requires_grad = True
+        optimizer = torch.optim.AdamW(model.parameters(), args.lr,
+                    weight_decay=args.weight_decay)
+    elif args.train_method == 'TinyTL-B':
         for param in model.parameters():
             param.requires_grad = False
         for name, param in model.named_parameters():
             if 'bias' in name:
-                print("bias")
                 param.requires_grad = True
-        optimizer = torch.optim.Adam(model.parameters(), args.lr,
-                                     weight_decay=args.weight_decay)
-        # l2sp_op =l2sp(model.parameters(), lr=args.lr*0.5)
+        for param in model.classifier.parameters():
+            param.requires_grad = True
+        optimizer = torch.optim.AdamW(model.parameters(), args.lr,
+                            weight_decay=args.weight_decay)
+            # l2sp_op =l2sp(model.parameters(), lr=args.lr*0.5)
+    elif args.train_method == 'norm+last':
+        for param in model.parameters():
+            param.requires_grad = False
+        for name, param in model.named_parameters():
+            if 'norm' in name:
+                param.requires_grad = True
+        for param in model.classifier.parameters():
+            param.requires_grad = True
+        optimizer = torch.optim.AdamW(model.parameters(), args.lr,
+                            weight_decay=args.weight_decay)
     if not torch.cuda.is_available():
         print('using CPU')
     elif args.distributed:
@@ -216,8 +239,7 @@ def main_worker(gpu, ngpus_per_node, args):
             writer = SummaryWriter()
 
     criterion = nn.CrossEntropyLoss().cuda(args.gpu)
-    scheduler = torch.optim.lr_scheduler.ExponentialLR(
-        optimizer, gamma=args.gamma)
+    scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma = args.gamma)
     # optionally resume from a checkpoint
     if args.resume:
         if os.path.isfile(args.resume):
@@ -266,7 +288,6 @@ def main_worker(gpu, ngpus_per_node, args):
     for epoch in range(args.start_epoch, args.epochs):
         if args.distributed:
             train_sampler.set_epoch(epoch)
-        print(model)
         # train for one epoch
 
         # if not args.multiprocessing_distributed or (args.multiprocessing_distributed
@@ -300,13 +321,11 @@ def main_worker(gpu, ngpus_per_node, args):
                 writer.add_scalar('acc/train', acc1_train, epoch)
                 writer.add_scalar('loss/val', loss_val, epoch)
                 writer.add_scalar('acc/val', acc1, epoch)
-                train_loss_save = './log/train_bias.txt'
-                file_save1 = open(train_loss_save, mode='a')
-                file_save1.write('\n'+'step:'+str(epoch)+'  loss_train:'+str(loss_train)+'  acc1_train:'+str(
-                    acc1_train.item())+'  loss_val:'+str(loss_val)+'  acc1_val:'+str(acc1.item()))
-
+                train_loss_save = './log/tune_last.txt'
+                file_save1=open(train_loss_save,mode='a')
+                file_save1.write('\n'+'step:'+str(epoch)+'  loss_train:'+str(loss_train)+'  acc1_train:'+str(acc1_train.item())+'  loss_val:'+str(loss_val)+'  acc1_val:'+str(acc1.item()))
+                print(scheduler.get_last_lr())
                 file_save1.close()
-
 
 if __name__ == '__main__':
     main()
