@@ -94,17 +94,6 @@ Training Details. I freeze the memory-heavy modules and only update memory-effic
     ├── gradient_checkpoint
     │   ├── example.py
     │   └── utils.py
-    ├── log
-    │   ├── train.txt
-    │   ├── train_adam.txt
-    │   ├── train_sgd.txt
-    │   ├── tune_adamw.txt
-    │   ├── tune_full.txt
-    │   ├── tune_last.txt
-    │   ├── tune_normlast.txt
-    │   ├── tune_tinybias.txt
-    │   ├── tune_tinytl-L+B.txt
-    │   └── tune_tinytl-L.txt
     ├── train.py
     ├── utils.py
     └── vision
