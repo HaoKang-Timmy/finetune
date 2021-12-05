@@ -62,7 +62,7 @@ To implement it, I design an API function for inserting lite residual for all In
 ```python
     @staticmethod
     def insert_lite_residual(net, downsample_ratio=2, upsample_type='bilinear',
-                             expand=1.0, max_kernel_size=5, act_func='relu', n_groups=2,
+                             expand=1.0, max_kernel_size=3, act_func='relu', n_groups=2,
                              **kwargs)
 
 ```
