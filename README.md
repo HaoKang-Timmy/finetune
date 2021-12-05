@@ -57,7 +57,7 @@ class LiteResidualModule(nn.Module):
         return main_x + lite_residual_x
 ```
 
-To implement it, we design an API function.
+To implement it, we design an API function for inserting lite residual for all InverseResidual Blocks in MobileNetV2.
 
 ```python
     @staticmethod
@@ -67,9 +67,17 @@ To implement it, we design an API function.
 
 ```
 
+Also we changed bn to gn for small batchs training.
+
+```python
+replace_bn_with_gn(net, gn_channel_per_group=8)
+```
+
+
+
 ## 1.3 Training Details
 
-Training Details. We freeze the memory-heavy modules (weights of the feature extractor) and only update memory-efficient modules (bias, lite residual, classifier head) during transfer learning. The models are fine-tuned for 40 epochs using te AdamW optimizer with 128 batches on 4 GPUs. The initial learning rate is set to be 4e-4 with exp_decay scheduler(gamma = 0.9)
+Training Details. We freeze the memory-heavy modules (weights of the feature extractor) and only update memory-efficient modules (bias, lite residual, classifier head) during transfer learning. The models are fine-tuned for 40 epochs using te AdamW optimizer with 8 batches on 4 GPUs. The initial learning rate is set to be 4e-4 with exp_decay scheduler(gamma = 0.9)
 
 ## 1.4 Usage
 

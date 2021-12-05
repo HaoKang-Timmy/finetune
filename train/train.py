@@ -3,6 +3,7 @@ import os
 import random
 import warnings
 from utils import train, validate, adjust_learning_rate, save_checkpoint, prepare_dataloader, LiteResidualModule
+from ofa.utils import replace_bn_with_gn
 import torch
 import torch.nn as nn
 import torch.nn.parallel
@@ -206,6 +207,7 @@ def main_worker(gpu, ngpus_per_node, args):
             param.requires_grad = True
         optimizer = torch.optim.AdamW(model.parameters(), args.lr,
                             weight_decay=args.weight_decay)
+        replace_bn_with_gn(model, gn_channel_per_group=8)
     if not torch.cuda.is_available():
         print('using CPU')
     elif args.distributed:
