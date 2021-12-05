@@ -81,7 +81,7 @@ Training Details. I freeze the memory-heavy modules and only update memory-effic
 
 ## 1.4 Usage
 
-## 1.4.1 File structure
+### 1.4.1 File structure
 
 ```
 ├── README.md
@@ -122,7 +122,7 @@ Print command below for more information
 python train.py -h
 ```
 
-## 1.4.3 Example
+### 1.4.3 Example
 
 ```
 python train.py -a mobilenet_v2 --dist-url 'tcp://127.0.0.1:1234' --dist-backend 'nccl' --multiprocessing-distributed --world-size 1 --rank 0 --seed 1 --tensorboard --train-method [method]  -t CIFAR10 --pretrained  [CIFAR_DATAPATH]
@@ -132,7 +132,7 @@ Change [method], [CIFAR_DATAPATH] to what it should be.
 
 ## 2 Main Results
 
-## 2.1 Table
+### 2.1 Table
 
 Comparison between TinyTL and conventional transfer learning methods. For object classification datasets, I report the top1 accuracy. ‘B’ represents Bias while ‘L’ represents LiteResidual. *FT-Last* represents only the last layer is fine-tuned. *FT-Norm+Last* represents normalization layers and the last layers are fine-tuned. *FT-Full* represents the full network is fine-tuned. The backbone neural network is MobileNetV2, and the resolution is 224. TinyTL consistently outperforms *FT-Last* and *FT-Norm+Last*.
 
@@ -145,7 +145,7 @@ Comparison between TinyTL and conventional transfer learning methods. For object
 | FT-Norm+Last | CIFAR10 | 4016MB      | 73.84%               |
 | FT-Full      | CIFAR10 | 5192MB      | 96.16%               |
 
-
+### 2.2 Curve
 
 <img src="./pic/image-20211206012001543.png" alt="image-20211206012001543" style="zoom: 200%;" />
 
@@ -161,13 +161,13 @@ TinyTL is a sufficient way of fine-tuning with a little sacrifice. It provides a
 
 ## 1 Setup
 
-I use two PyTorch mechanisms to implement gradient checkpoint. The first one is provided by the official pytorch https://pytorch.org/docs/stable/checkpoint.html. And the second way is to use a `torch.autograd.Function` . As for this gradient checkpoint, it is analyzed in this paper https://arxiv.org/abs/1604.06174.
+I use two PyTorch mechanisms to implement gradient checkpoint. The first one is provided by the official PyTorch https://pytorch.org/docs/stable/checkpoint.html. And the second way is to use a `torch.autograd.Function` . As for this gradient checkpoint, it is analyzed in this paper https://arxiv.org/abs/1604.06174.
 
 ## 2 Code and Usage
 
 Two implementations are shown below
 
-## 2.1 Checkpoint Package
+### 2.1 Checkpoint Package
 
 ```python
 class checkpoint_segment(nn.Module):
@@ -195,7 +195,7 @@ model_segment = checkpoint_segment.insert_checkpoint(model_segment)
 
 `model_segment` is the part that you need to set checkpoint, you could see `./train/gradient_checkpoint/example.py` for more informations.
 
-## 2.2 Autograd Implementation
+### 2.2 Autograd Implementation
 
 ```python
 class CheckpointFunction(torch.autograd.Function):
