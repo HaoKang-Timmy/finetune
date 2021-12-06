@@ -139,7 +139,7 @@ Comparison between TinyTL and conventional transfer learning methods. For object
 | Method       | Dataset | Memory cost | Train accuracy(top1) |
 | ------------ | ------- | ----------- | -------------------- |
 | FT-Last      | CIFAR10 | 3957MB      | 72.9%                |
-| TinyTL-B     | CIFAR10 | 3324MB      | 73.8%                |
+| TinyTL-B     | CIFAR10 | 3024MB      | 73.8%                |
 | TinyTL-L     | CIFAR10 | 3101MB      | 93.7%                |
 | TinyTL-L+B   | CIFAR10 | 3196MB      | 92.6%                |
 | FT-Norm+Last | CIFAR10 | 4016MB      | 73.84%               |
