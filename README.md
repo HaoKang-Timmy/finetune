@@ -77,7 +77,19 @@ replace_bn_with_gn(net, gn_channel_per_group=8)
 
 ## 1.3 Training Details
 
-Training Details. I freeze the memory-heavy modules and only update memory-efficient modules (bias, lite residual, classifier head) during transfer learning. The models are fine-tuned for 40 epochs using the Adam optimizer with 8 batches on 1 GPU. The initial learning rate is set to be 1e-4 with exp_decay scheduler(gamma = 0.9), the same as the training set in the paper.
+| setting            | value             |
+| ------------------ | ----------------- |
+| Pretrained dataset | Imagenet          |
+| Dataset            | CIFAR10           |
+| Epochs             | 40                |
+| Optimizer          | Adam              |
+| Lr(initial)        | 0.05              |
+| Scheduler          | CosineAnnealingLR |
+| Batch size         | 8                 |
+| Weight decay       | 0.0001            |
+| Distributed        | No                |
+
+
 
 ## 1.4 Usage
 
@@ -88,7 +100,6 @@ Training Details. I freeze the memory-heavy modules and only update memory-effic
 ├── pic
 └── train
     ├── dataset
-    │   ├── __pycache__
     │   └── dataset_collection.py
     ├── gradient_checkpoint
     │   ├── example.py
@@ -105,15 +116,15 @@ Training Details. I freeze the memory-heavy modules and only update memory-effic
 Training file stores in ./train/train.py.
 
 ```
-usage: train.py [-h] [-a ARCH] [-j N] [--epochs N] [--start-epoch N] [-b N]
+usage: train.py [-h] [--a ARCH] [-j N] [--epochs N] [--start-epoch N] [-b N]
                 [--lr LR] [--momentum M] [--wd W] [-p N] [--resume PATH] [-e]
                 [--pretrained] [--world-size WORLD_SIZE] [--rank RANK]
                 [--dist-url DIST_URL] [--dist-backend DIST_BACKEND]
                 [--seed SEED] [--gpu GPU] [--multiprocessing-distributed]
                 [-type DATASET_TYPE] [--gamma GAMMA] [--tensorboard]
-                [--train-method {deep,low,fintune,bias,TinyTL-L,TinyTL-B,TinyTL-L+B,norm+last}]
+                [--train-method {deep,low,finetune,bias,TinyTL-L,TinyTL-B,TinyTL-L+B,norm+last}]
+                [--proxy]
                 DIR
-
 ```
 
 Print command below for more information
@@ -125,7 +136,7 @@ python train.py -h
 ### 1.4.3 Example
 
 ```
-python train.py -a mobilenet_v2 --dist-url 'tcp://127.0.0.1:1234' --dist-backend 'nccl' --multiprocessing-distributed --world-size 1 --rank 0 --seed 1 --tensorboard --train-method [method]  -t CIFAR10 --pretrained  [CIFAR_DATAPATH]
+python train.py --a mobilenet_v2 --dist-url 'tcp://127.0.0.1:1234' --dist-backend 'nccl' --multiprocessing-distributed --world-size 1 --rank 0 --seed 1 --tensorboard --train-method [method]  -t CIFAR10 --pretrained  [CIFAR_DATAPATH]
 ```
 
 Change [method], [CIFAR_DATAPATH] to what it should be.
@@ -157,16 +168,16 @@ Resolution: 224
 | FT-Norm+Last | CIFAR10 | 1004MB      | 73.84%               |
 | FT-Full      | CIFAR10 | 1298MB      | 96.16%               |
 
-As for ProxylessNAS-Mobile:
+As for ProxylessNAS-Mobile(same training settings with MobileNetV2):
 
-| Method       | Dataset | Train accuracy(top1) |
-| ------------ | ------- | -------------------- |
-| FT-Last      | CIFAR10 | 85.74%               |
-| TinyTL-B     | CIFAR10 | 93.22%               |
-| TinyTL-L     | CIFAR10 | 96.03%               |
-| TinyTL-L+B   | CIFAR10 | 95.93%               |
-| FT-Norm+Last | CIFAR10 | 94.51%               |
-| FT-Full      | CIFAR10 | 96.97%               |
+| Method       | Dataset | Memory cost | Train accuracy(top1) |
+| ------------ | ------- | ----------- | -------------------- |
+| FT-Last      | CIFAR10 | 613MB       | 85.74%               |
+| TinyTL-B     | CIFAR10 | 442MB       | 93.22%               |
+| TinyTL-L     | CIFAR10 | 471MB       | 96.03%               |
+| TinyTL-L+B   | CIFAR10 | 486MB       | 95.93%               |
+| FT-Norm+Last | CIFAR10 | 639MB       | 94.51%               |
+| FT-Full      | CIFAR10 | 712MB       | 96.97%               |
 
 
 
@@ -180,10 +191,16 @@ Top1 accuracy, loss of different transfer learning methods. TinyTL-L and TinyTL-
 
 ### 2.3 command
 
-same as the training set in the paper
+same as the training set in the paper, but the backbone is MoblieNet
 
 ```
-python train.py -a mobilenet_v2 --wd 0.0001 --lr 0.05 --epochs 8 --gpu 1  --tensorboard --train-method norm+last  -t CIFAR10 --pretrained  ./data
+python train.py --a mobilenet_v2 --wd 0.0001 --lr 0.05 --epochs 8 --gpu 1  --tensorboard --train-method norm+last  -t CIFAR10 --pretrained  ./data
+```
+
+Change backbone to ProxylessNAS-Mobile
+
+```
+python train.py --proxy --wd 0.0001 --lr 0.05 --epochs 8 --gpu 1  --tensorboard --train-method norm+last  -t CIFAR10 --pretrained  ./data
 ```
 
 
