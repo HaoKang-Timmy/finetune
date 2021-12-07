@@ -134,7 +134,7 @@ Change [method], [CIFAR_DATAPATH] to what it should be.
 
 ### 2.1 Table
 
-FT-Last: Only the last layer is being finetuned other parameters are frozen.
+FT-Last: only the last layer is being finetuned other parameters are frozen.
 
 TinyTL-B: only finetune bias and last layer
 
