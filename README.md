@@ -157,7 +157,7 @@ Resolution: 224
 | FT-Norm+Last | CIFAR10 | 1004MB      | 73.84%               |
 | FT-Full      | CIFAR10 | 1298MB      | 96.16%               |
 
-As for proxynetmoble:
+As for ProxylessNAS-Mobile:
 
 | Method   | Dataset | Train accuracy(top1) |
 | -------- | ------- | -------------------- |
