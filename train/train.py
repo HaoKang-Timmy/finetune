@@ -3,7 +3,7 @@ import os
 import random
 import warnings
 from utils import train, validate, adjust_learning_rate, save_checkpoint, prepare_dataloader, LiteResidualModule
-from ofa.utils import replace_bn_with_gn
+from ofa.utils import replace_bn_with_gn, init_models
 import torch
 import torch.nn as nn
 import torch.nn.parallel
@@ -16,6 +16,7 @@ import torch.utils.data.distributed
 import torchvision.transforms as transforms
 import torchvision.models as models
 from ofa.model_zoo import proxylessnas_mobile
+from ofa.utils.layers import LinearLayer
 from torch.utils.tensorboard import SummaryWriter
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("__")
@@ -24,7 +25,7 @@ parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
 
 parser.add_argument('data', metavar='DIR',
                     help='path to dataset')
-parser.add_argument('-a', '--arch', metavar='ARCH', default='mobilenet_v2',
+parser.add_argument('--a', '--arch', metavar='ARCH', default='mobilenet_v2',
                     choices=model_names,
                     help='model architecture: ' +
                     ' | '.join(model_names) +
@@ -35,7 +36,7 @@ parser.add_argument('--epochs', default=40, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('-b', '--batch-size', default=128, type=int,
+parser.add_argument('-b', '--batch-size', default=8, type=int,
                     metavar='N',
                     help='mini-batch size (default: 256), this is the total '
                          'batch size of all GPUs on the current node when '
@@ -79,7 +80,7 @@ parser.add_argument('--gamma', default=0.9, type=float,
 parser.add_argument('--tensorboard', action='store_true',
                     help='set up a sesion at tensorboard')
 parser.add_argument('--train-method', choices=[
-                    'deep', 'low', 'fintune', 'bias', 'TinyTL-L', 'TinyTL-B', 'TinyTL-L+B', 'norm+last'], default='fintune', help='choose a training method')
+                    'deep', 'low', 'finetune', 'bias', 'TinyTL-L', 'TinyTL-B', 'TinyTL-L+B', 'norm+last'], default='fintune', help='choose a training method')
 parser.add_argument('--proxy', default=False, action='store_true')
 best_acc1 = 0
 
@@ -137,17 +138,27 @@ def main_worker(gpu, ngpus_per_node, args):
             model = models.__dict__[args.arch](pretrained=True)
         else:
             print("=> creating model '{}'".format(args.arch))
-            model = models.__dict__[args.arch]()
+        model = models.__dict__[args.arch]()
+        if args.dataset_type == 'CUB200':
+            model.classifier[-1] = nn.Linear(1280, 200)
+        elif args.dataset_type == 'CIFAR10':
+            model.classifier[-1] = nn.Linear(1280, 10)
+        elif args.dataset_type == 'CIFAR100':
+            model.classifier[-1] = nn.Linear(1280, 100)
     # still could just work on mobilenet_v2
+
     if args.proxy == True:
+        classification_head = []
         model = proxylessnas_mobile(pretrained=True)
-    if args.dataset_type == 'CUB200':
-        model.classifier[-1] = nn.Linear(1280, 200)
-    elif args.dataset_type == 'CIFAR10':
-        model.classifier[-1] = nn.Linear(1280, 10)
-    elif args.dataset_type == 'CIFAR100':
-        model.classifier[-1] = nn.Linear(1280, 100)
-    if args.train_method == 'fintune':
+        if args.dataset_type == 'CUB200':
+            model.classifier = LinearLayer(1280, 200,dropout_rate=0.2)
+        elif args.dataset_type == 'CIFAR10':
+            model.classifier = LinearLayer(1280, 10,dropout_rate=0.2)
+        elif args.dataset_type == 'CIFAR100':
+            model.classifier = LinearLayer(1280, 100,dropout_rate=0.2)
+        classification_head.append(model.classifier)
+        init_models(classification_head)
+    if args.train_method == 'finetune':
         for param in model.parameters():
             param.requires_grad = False
         for param in model.classifier.parameters():
