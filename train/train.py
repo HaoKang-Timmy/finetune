@@ -15,6 +15,7 @@ import torch.utils.data
 import torch.utils.data.distributed
 import torchvision.transforms as transforms
 import torchvision.models as models
+from ofa.model_zoo import proxylessnas_mobile
 from torch.utils.tensorboard import SummaryWriter
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("__")
@@ -78,7 +79,8 @@ parser.add_argument('--gamma', default=0.9, type=float,
 parser.add_argument('--tensorboard', action='store_true',
                     help='set up a sesion at tensorboard')
 parser.add_argument('--train-method', choices=[
-                    'deep', 'low', 'fintune', 'bias', 'TinyTL-L','TinyTL-B','TinyTL-L+B','norm+last'], default='fintune', help='choose a training method')
+                    'deep', 'low', 'fintune', 'bias', 'TinyTL-L', 'TinyTL-B', 'TinyTL-L+B', 'norm+last'], default='fintune', help='choose a training method')
+parser.add_argument('--proxy', default=False, action='store_true')
 best_acc1 = 0
 
 
@@ -136,6 +138,8 @@ def main_worker(gpu, ngpus_per_node, args):
         print("=> creating model '{}'".format(args.arch))
         model = models.__dict__[args.arch]()
     # still could just work on mobilenet_v2
+    if args.proxy == True:
+        model = proxylessnas_mobile(pretrained=True)
     if args.dataset_type == 'CUB200':
         model.classifier[-1] = nn.Linear(1280, 200)
     elif args.dataset_type == 'CIFAR10':
@@ -149,7 +153,7 @@ def main_worker(gpu, ngpus_per_node, args):
             param.requires_grad = True
         optimizer = torch.optim.Adam(model.classifier.parameters(), args.lr,
                                      weight_decay=args.weight_decay)
-    
+
     elif args.train_method == 'low':
         classifier_map = list(map(id, model.classifier.parameters()))
         low_map = list(map(id, model.features[-5:]))
@@ -159,12 +163,12 @@ def main_worker(gpu, ngpus_per_node, args):
         deep_params = filter(lambda p: id(
             p) not in low_map+classifier_map, model.parameters())
         optimizer = torch.optim.Adam([{'params': classifier_params}, {
-                                        'params': low_params, 'lr': args.lr*0.6}, {'params': deep_params, 'lr': args.lr*0.4}], lr=args.lr,weight_decay=args.weight_decay)
+            'params': low_params, 'lr': args.lr*0.6}, {'params': deep_params, 'lr': args.lr*0.4}], lr=args.lr, weight_decay=args.weight_decay)
     elif args.train_method == 'deep':
         for param in model.parameters():
             param.requires_grad = True
             optimizer = torch.optim.Adam(model.parameters(), args.lr,
-                                            weight_decay=args.weight_decay)
+                                         weight_decay=args.weight_decay)
     elif args.train_method == 'TinyTL-L':
         for param in model.parameters():
             param.requires_grad = False
@@ -172,7 +176,7 @@ def main_worker(gpu, ngpus_per_node, args):
             param.requires_grad = True
         LiteResidualModule.insert_lite_residual(model)
         optimizer = torch.optim.Adam(model.parameters(), args.lr,
-                    weight_decay=args.weight_decay)
+                                     weight_decay=args.weight_decay)
     elif args.train_method == 'TinyTL-L+B':
         for param in model.parameters():
             param.requires_grad = False
@@ -185,7 +189,7 @@ def main_worker(gpu, ngpus_per_node, args):
             if 'bias' in name:
                 param.requires_grad = True
         optimizer = torch.optim.Adam(model.parameters(), args.lr,
-                    weight_decay=args.weight_decay)
+                                     weight_decay=args.weight_decay)
     elif args.train_method == 'TinyTL-B':
         for param in model.parameters():
             param.requires_grad = False
@@ -195,8 +199,8 @@ def main_worker(gpu, ngpus_per_node, args):
         for param in model.classifier.parameters():
             param.requires_grad = True
         optimizer = torch.optim.Adam(model.parameters(), args.lr,
-                            weight_decay=args.weight_decay)
-            # l2sp_op =l2sp(model.parameters(), lr=args.lr*0.5)
+                                     weight_decay=args.weight_decay)
+        # l2sp_op =l2sp(model.parameters(), lr=args.lr*0.5)
     elif args.train_method == 'norm+last':
         for param in model.parameters():
             param.requires_grad = False
@@ -206,7 +210,7 @@ def main_worker(gpu, ngpus_per_node, args):
         for param in model.classifier.parameters():
             param.requires_grad = True
         optimizer = torch.optim.AdamW(model.parameters(), args.lr,
-                            weight_decay=args.weight_decay)
+                                      weight_decay=args.weight_decay)
         replace_bn_with_gn(model, gn_channel_per_group=8)
     if not torch.cuda.is_available():
         print('using CPU')
@@ -290,19 +294,10 @@ def main_worker(gpu, ngpus_per_node, args):
     for epoch in range(args.start_epoch, args.epochs):
         if args.distributed:
             train_sampler.set_epoch(epoch)
-        # train for one epoch
 
-        # if not args.multiprocessing_distributed or (args.multiprocessing_distributed
-        #                                             and args.rank % ngpus_per_node == 0):
-        #     train(train_loader, model, criterion, optimizer,
-        #           epoch, args, ngpus_per_node, writer=writer)
         acc1_train, loss_train = train(train_loader, model, criterion,
                                        optimizer, epoch, args, ngpus_per_node)
         adjust_learning_rate(scheduler)
-        # evaluate on validation set
-        # if not args.multiprocessing_distributed or (args.multiprocessing_distributed
-        #                                             and args.rank % ngpus_per_node == 0):
-        #     acc1 = validate(val_loader, model, criterion, args,ngpus_per_node,writer=writer)
         acc1, loss_val = validate(
             val_loader, model, criterion, args, ngpus_per_node)
         # remember best acc@1 and save checkpoint
@@ -324,10 +319,12 @@ def main_worker(gpu, ngpus_per_node, args):
                 writer.add_scalar('loss/val', loss_val, epoch)
                 writer.add_scalar('acc/val', acc1, epoch)
                 train_loss_save = './log/tune_last.txt'
-                file_save1=open(train_loss_save,mode='a')
-                file_save1.write('\n'+'step:'+str(epoch)+'  loss_train:'+str(loss_train)+'  acc1_train:'+str(acc1_train.item())+'  loss_val:'+str(loss_val)+'  acc1_val:'+str(acc1.item()))
+                file_save1 = open(train_loss_save, mode='a')
+                file_save1.write('\n'+'step:'+str(epoch)+'  loss_train:'+str(loss_train)+'  acc1_train:'+str(
+                    acc1_train.item())+'  loss_val:'+str(loss_val)+'  acc1_val:'+str(acc1.item()))
                 print(scheduler.get_last_lr())
                 file_save1.close()
+
 
 if __name__ == '__main__':
     main()

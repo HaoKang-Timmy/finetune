@@ -13,7 +13,8 @@ import math
 import torch.nn as nn
 from ofa.utils import get_same_padding, make_divisible, build_activation, init_models
 from collections import OrderedDict
-import torch.nn.functional as function
+from ofa.imagenet_classification.networks import ProxylessNASNets
+from ofa.utils.layers import ZeroLayer
 
 
 def train(train_loader, model, criterion, optimizer, epoch, args, ngpus_per_node, writer=None):
@@ -353,14 +354,43 @@ class LiteResidualModule(nn.Module):
     def insert_lite_residual(net, downsample_ratio=2, upsample_type='bilinear',
                              expand=1.0, max_kernel_size=5, act_func='relu', n_groups=2,
                              **kwargs):
-        for i in range(1, 18):
-            print(i)
-            print(net.features[i])
-            if i == 1:
-                net.features[i] = LiteResidualModule(net.features[i], in_channels=net.features[i].conv[0][0].in_channels, out_channels=net.features[i].conv[1].out_channels, expand=expand, kernel_size=3,
-                                                     act_func=act_func, n_groups=n_groups, downsample_ratio=downsample_ratio,
-                                                     upsample_type=upsample_type, stride=net.features[i].conv[0][0].stride[1],)
-            else:
-                net.features[i] = LiteResidualModule(net.features[i], in_channels=net.features[i].conv[0][0].in_channels, out_channels=net.features[i].conv[2].out_channels, expand=expand, kernel_size=3,
-                                                     act_func=act_func, n_groups=n_groups, downsample_ratio=downsample_ratio,
-                                                     upsample_type=upsample_type, stride=net.features[i].conv[1][0].stride[1],)
+        if isinstance(net, ProxylessNASNets):
+            bn_param = net.get_bn_param()
+            max_resolution = 128
+            stride_stages = [2, 2, 2, 1, 2, 1]
+            for block_index_list, stride in zip(net.grouped_block_index, stride_stages):
+                for i, idx in enumerate(block_index_list):
+                    block = net.blocks[idx].conv
+                    if isinstance(block, ZeroLayer):
+                        continue
+                    s = stride if i == 0 else 1
+                    block_downsample_ratio = downsample_ratio
+                    block_resolution = max(1, max_resolution // block_downsample_ratio)
+                    max_resolution //= s
+
+                    kernel_size = max_kernel_size
+                    if block_resolution == 1:
+                        kernel_size = 1
+                        block_downsample_ratio = None
+                    else:
+                        while block_resolution < kernel_size:
+                            kernel_size -= 2
+                    net.blocks[idx].conv = LiteResidualModule(
+                        block, block.in_channels, block.out_channels, expand=expand, kernel_size=kernel_size,
+                        act_func=act_func, n_groups=n_groups, downsample_ratio=block_downsample_ratio,
+                        upsample_type=upsample_type, stride=s,
+                    )
+
+            net.set_bn_param(**bn_param)
+        else:
+            for i in range(1, 18):
+                print(i)
+                print(net.features[i])
+                if i == 1:
+                    net.features[i] = LiteResidualModule(net.features[i], in_channels=net.features[i].conv[0][0].in_channels, out_channels=net.features[i].conv[1].out_channels, expand=expand, kernel_size=3,
+                                                        act_func=act_func, n_groups=n_groups, downsample_ratio=downsample_ratio,
+                                                        upsample_type=upsample_type, stride=net.features[i].conv[0][0].stride[1],)
+                else:
+                    net.features[i] = LiteResidualModule(net.features[i], in_channels=net.features[i].conv[0][0].in_channels, out_channels=net.features[i].conv[2].out_channels, expand=expand, kernel_size=3,
+                                                        act_func=act_func, n_groups=n_groups, downsample_ratio=downsample_ratio,
+                                                        upsample_type=upsample_type, stride=net.features[i].conv[1][0].stride[1],)
