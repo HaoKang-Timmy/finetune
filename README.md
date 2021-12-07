@@ -134,7 +134,7 @@ Change [method], [CIFAR_DATAPATH] to what it should be.
 
 ### 2.1 Table
 
-FT-Last: Only the last layer is being finetuned other parameters are frozen.
+FT-Last: only the last layer is being finetuned other parameters are frozen.
 
 TinyTL-B: only finetune bias and last layer
 
@@ -262,4 +262,5 @@ I use MobileNetV2 as my backbone, Also, I set checkpoints at each InversResidual
 | 16         | 2105MB                          | 1393MB                       |
 | 32         | 3541MB                          | 2119MB                       |
 | 64         | 7492MB                          | 3291MB                       |
+
 
