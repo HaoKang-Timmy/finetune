@@ -77,7 +77,7 @@ replace_bn_with_gn(net, gn_channel_per_group=8)
 
 ## 1.3 Training Details
 
-Training Details. I freeze the memory-heavy modules and only update memory-efficient modules (bias, lite residual, classifier head) during transfer learning. The models are fine-tuned for 40 epochs using the Adam optimizer with 8 batches on 1 GPUs. The initial learning rate is set to be 1e-4 with exp_decay scheduler(gamma = 0.9) , same to the training set in the paper.
+Training Details. I freeze the memory-heavy modules and only update memory-efficient modules (bias, lite residual, classifier head) during transfer learning. The models are fine-tuned for 40 epochs using the Adam optimizer with 8 batches on 1 GPU. The initial learning rate is set to be 1e-4 with exp_decay scheduler(gamma = 0.9), the same as the training set in the paper.
 
 ## 1.4 Usage
 
@@ -149,7 +149,7 @@ I report the top1 accuracy. ‘B’ represents Bias while ‘L’ represents Lit
 
 <img src="./pic/image-20211206012001543.png" alt="image-20211206012001543" style="zoom: 200%;" />
 
-![image-20211206213825385](/Users/catbeta/Library/Application Support/typora-user-images/image-20211206213825385.png)
+![image-20211207131138578](./pic/image-20211207131138578.png)
 
 Top1 accuracy, loss of different transfer learning methods. TinyTL-L and TinyTL-L+B have similar results with Finetune Full layers.
 
@@ -171,7 +171,7 @@ TinyTL is a sufficient way of fine-tuning with a little sacrifice. It provides a
 
 ## 1 Setup
 
-I use two PyTorch mechanisms to implement gradient checkpoint. The first one is provided by the official PyTorch https://pytorch.org/docs/stable/checkpoint.html. And the second way is to use a `torch.autograd.Function` . As for this gradient checkpoint, it is analyzed in this paper https://arxiv.org/abs/1604.06174.
+I use two PyTorch mechanisms to implement gradient checkpoint. The first one is provided by the official PyTorch https://pytorch.org/docs/stable/checkpoint.html. And the second way is to use a `torch.autograd.Function`. As for this gradient checkpoint, it is analyzed in this paper https://arxiv.org/abs/1604.06174.
 
 ## 2 Code and Usage
 
