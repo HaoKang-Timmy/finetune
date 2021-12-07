@@ -77,7 +77,7 @@ replace_bn_with_gn(net, gn_channel_per_group=8)
 
 ## 1.3 Training Details
 
-Training Details. I freeze the memory-heavy modules and only update memory-efficient modules (bias, lite residual, classifier head) during transfer learning. The models are fine-tuned for 40 epochs using the Adam optimizer with 8 batches on 1 GPUs. The initial learning rate is set to be 1e-4 with exp_decay scheduler(gamma = 0.9)
+Training Details. I freeze the memory-heavy modules and only update memory-efficient modules (bias, lite residual, classifier head) during transfer learning. The models are fine-tuned for 40 epochs using the Adam optimizer with 8 batches on 1 GPUs. The initial learning rate is set to be 1e-4 with exp_decay scheduler(gamma = 0.9) , same to the training set in the paper.
 
 ## 1.4 Usage
 
@@ -134,7 +134,7 @@ Change [method], [CIFAR_DATAPATH] to what it should be.
 
 ### 2.1 Table
 
-Comparison between TinyTL and conventional transfer learning methods. For object classification datasets, I report the top1 accuracy. ‘B’ represents Bias while ‘L’ represents LiteResidual. *FT-Last* represents only the last layer is fine-tuned. *FT-Norm+Last* represents normalization layers and the last layers are fine-tuned. *FT-Full* represents the full network is fine-tuned. The backbone neural network is MobileNetV2, and the resolution is 224. TinyTL consistently outperforms *FT-Last* and *FT-Norm+Last*.
+I report the top1 accuracy. ‘B’ represents Bias while ‘L’ represents LiteResidual. *FT-Last* represents only the last layer is fine-tuned. *FT-Norm+Last* represents normalization layers and the last layers are fine-tuned. *FT-Full* represents the full network is fine-tuned. The backbone neural network is MobileNetV2, and the resolution is 224. 
 
 | Method       | Dataset | Memory cost | Train accuracy(top1) |
 | ------------ | ------- | ----------- | -------------------- |
@@ -152,6 +152,16 @@ Comparison between TinyTL and conventional transfer learning methods. For object
 ![image-20211206213825385](/Users/catbeta/Library/Application Support/typora-user-images/image-20211206213825385.png)
 
 Top1 accuracy, loss of different transfer learning methods. TinyTL-L and TinyTL-L+B have similar results with Finetune Full layers.
+
+### 2.3 command
+
+same as the training set in the paper
+
+```
+python train.py -a mobilenet_v2 --wd 0.0001 --lr 0.05 --epochs 8 --gpu 1  --tensorboard --train-method norm+last  -t CIFAR10 --pretrained  ./data
+```
+
+
 
 ## 3 Conclusion
 

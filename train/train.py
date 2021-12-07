@@ -39,11 +39,11 @@ parser.add_argument('-b', '--batch-size', default=128, type=int,
                     help='mini-batch size (default: 256), this is the total '
                          'batch size of all GPUs on the current node when '
                          'using Data Parallel or Distributed Data Parallel')
-parser.add_argument('--lr', '--learning-rate', default=0.0004, type=float,
+parser.add_argument('--lr', '--learning-rate', default=0.05, type=float,
                     metavar='LR', help='initial learning rate', dest='lr')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M',
                     help='momentum')
-parser.add_argument('--wd', '--weight-decay', default=5e-4, type=float,
+parser.add_argument('--wd', '--weight-decay', default=1e-4, type=float,
                     metavar='W', help='weight decay (default: 1e-4)',
                     dest='weight_decay')
 parser.add_argument('-p', '--print-freq', default=30, type=int,
@@ -241,7 +241,7 @@ def main_worker(gpu, ngpus_per_node, args):
             writer = SummaryWriter()
 
     criterion = nn.CrossEntropyLoss().cuda(args.gpu)
-    scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma = args.gamma)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=40)
     # optionally resume from a checkpoint
     if args.resume:
         if os.path.isfile(args.resume):
