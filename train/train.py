@@ -131,12 +131,13 @@ def main_worker(gpu, ngpus_per_node, args):
             args.rank = args.rank * ngpus_per_node + gpu
         dist.init_process_group(backend=args.dist_backend, init_method=args.dist_url,
                                 world_size=args.world_size, rank=args.rank)
-    if args.pretrained:
-        print("=> using pre-trained model '{}'".format(args.arch))
-        model = models.__dict__[args.arch](pretrained=True)
-    else:
-        print("=> creating model '{}'".format(args.arch))
-        model = models.__dict__[args.arch]()
+    if args.proxy == False:
+        if args.pretrained:
+            print("=> using pre-trained model '{}'".format(args.arch))
+            model = models.__dict__[args.arch](pretrained=True)
+        else:
+            print("=> creating model '{}'".format(args.arch))
+            model = models.__dict__[args.arch]()
     # still could just work on mobilenet_v2
     if args.proxy == True:
         model = proxylessnas_mobile(pretrained=True)
