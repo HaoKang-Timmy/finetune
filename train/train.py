@@ -179,8 +179,8 @@ def main_worker(gpu, ngpus_per_node, args):
     elif args.train_method == 'deep':
         for param in model.parameters():
             param.requires_grad = True
-            optimizer = torch.optim.Adam(model.parameters(), args.lr,
-                                         weight_decay=args.weight_decay)
+        optimizer = torch.optim.Adam(model.parameters(), args.lr,
+                                     weight_decay=args.weight_decay)
     elif args.train_method == 'TinyTL-L':
         for param in model.parameters():
             param.requires_grad = False

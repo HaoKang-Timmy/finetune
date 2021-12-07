@@ -161,6 +161,8 @@ FT-Full: finetune full layers
 
 Resolution: 224
 
+#### 2.1.1 MobileNetV2
+
 | Method       | Dataset | Memory cost | Train accuracy(top1) |
 | ------------ | ------- | ----------- | -------------------- |
 | FT-Last      | CIFAR10 | 990MB       | 73.54%               |
@@ -170,20 +172,22 @@ Resolution: 224
 | FT-Norm+Last | CIFAR10 | 1004MB      | 73.84%               |
 | FT-Full      | CIFAR10 | 1298MB      | 96.16%               |
 
-As for ProxylessNAS-Mobile(same training settings with MobileNetV2):
+#### 2.1.2 ProxylessNAS-Mobile
 
 | Method       | Dataset | Memory cost | Train accuracy(top1) |
 | ------------ | ------- | ----------- | -------------------- |
 | FT-Last      | CIFAR10 | 613MB       | 85.74%               |
 | TinyTL-B     | CIFAR10 | 442MB       | 93.70%               |
-| TinyTL-L     | CIFAR10 | 471MB       | 96.03%               |
+| TinyTL-L     | CIFAR10 | 471MB       | 95.80%               |
 | TinyTL-L+B   | CIFAR10 | 486MB       | 95.93%               |
 | FT-Norm+Last | CIFAR10 | 639MB       | 94.51%               |
 | FT-Full      | CIFAR10 | 712MB       | 96.97%               |
 
 
 
-### 2.2 Curve for MobileNetV2
+### 2.2 Curve
+
+#### 2.2.1 MobileNetV2
 
 <img src="./pic/image-20211206012001543.png" alt="image-20211206012001543" style="zoom: 200%;" />
 
@@ -191,15 +195,19 @@ As for ProxylessNAS-Mobile(same training settings with MobileNetV2):
 
 Top1 accuracy, loss of different transfer learning methods. TinyTL-L and TinyTL-L+B have similar results with Finetune Full layers.
 
+#### 2.2.2 ProxyNAS-Mobile
+
+
+
 ### 2.3 command
 
-same as the training set in the paper, but the backbone is MoblieNet
+MobileNetV2
 
 ```
 python train.py --a mobilenet_v2 --wd 0.0001 --lr 0.05 --epochs 8 --gpu 1  --tensorboard --train-method norm+last  -t CIFAR10 --pretrained  ./data
 ```
 
-Change backbone to ProxylessNAS-Mobile
+ProxylessNAS-Mobile
 
 ```
 python train.py --proxy --wd 0.0001 --lr 0.05 --epochs 8 --gpu 1  --tensorboard --train-method norm+last  -t CIFAR10 --pretrained  ./data
