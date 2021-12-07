@@ -263,3 +263,4 @@ I use MobileNetV2 as my backbone, Also, I set checkpoints at each InversResidual
 | 32         | 3541MB                          | 2119MB                       |
 | 64         | 7492MB                          | 3291MB                       |
 
+
