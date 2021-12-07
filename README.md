@@ -134,7 +134,19 @@ Change [method], [CIFAR_DATAPATH] to what it should be.
 
 ### 2.1 Table
 
-I report the top1 accuracy. ‘B’ represents Bias while ‘L’ represents LiteResidual. *FT-Last* represents only the last layer is fine-tuned. *FT-Norm+Last* represents normalization layers and the last layers are fine-tuned. *FT-Full* represents the full network is fine-tuned. The backbone neural network is MobileNetV2, and the resolution is 224. 
+FT-Last: Only the last layer is being finetuned other parameters are frozen.
+
+TinyTL-B: only finetune bias and last layer
+
+TinyTL-L: only finetune lite residual model and last layer
+
+TinyTL-L+B: finetune lite residual model and last layer as well as bias in each layer
+
+FT-Norm+Last: finetune last layer and group normalizations
+
+FT-Full: finetune full layers
+
+Resolution: 224
 
 | Method       | Dataset | Memory cost | Train accuracy(top1) |
 | ------------ | ------- | ----------- | -------------------- |
