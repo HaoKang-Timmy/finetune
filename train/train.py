@@ -151,11 +151,11 @@ def main_worker(gpu, ngpus_per_node, args):
         classification_head = []
         model = proxylessnas_mobile(pretrained=True)
         if args.dataset_type == 'CUB200':
-            model.classifier = LinearLayer(1280, 200,dropout_rate=0.2)
+            model.classifier = LinearLayer(1280, 200, dropout_rate=0.2)
         elif args.dataset_type == 'CIFAR10':
-            model.classifier = LinearLayer(1280, 10,dropout_rate=0.2)
+            model.classifier = LinearLayer(1280, 10, dropout_rate=0.2)
         elif args.dataset_type == 'CIFAR100':
-            model.classifier = LinearLayer(1280, 100,dropout_rate=0.2)
+            model.classifier = LinearLayer(1280, 100, dropout_rate=0.2)
         classification_head.append(model.classifier)
         init_models(classification_head)
     if args.train_method == 'finetune':

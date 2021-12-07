@@ -365,7 +365,8 @@ class LiteResidualModule(nn.Module):
                         continue
                     s = stride if i == 0 else 1
                     block_downsample_ratio = downsample_ratio
-                    block_resolution = max(1, max_resolution // block_downsample_ratio)
+                    block_resolution = max(
+                        1, max_resolution // block_downsample_ratio)
                     max_resolution //= s
 
                     kernel_size = max_kernel_size
@@ -388,9 +389,9 @@ class LiteResidualModule(nn.Module):
                 print(net.features[i])
                 if i == 1:
                     net.features[i] = LiteResidualModule(net.features[i], in_channels=net.features[i].conv[0][0].in_channels, out_channels=net.features[i].conv[1].out_channels, expand=expand, kernel_size=3,
-                                                        act_func=act_func, n_groups=n_groups, downsample_ratio=downsample_ratio,
-                                                        upsample_type=upsample_type, stride=net.features[i].conv[0][0].stride[1],)
+                                                         act_func=act_func, n_groups=n_groups, downsample_ratio=downsample_ratio,
+                                                         upsample_type=upsample_type, stride=net.features[i].conv[0][0].stride[1],)
                 else:
                     net.features[i] = LiteResidualModule(net.features[i], in_channels=net.features[i].conv[0][0].in_channels, out_channels=net.features[i].conv[2].out_channels, expand=expand, kernel_size=3,
-                                                        act_func=act_func, n_groups=n_groups, downsample_ratio=downsample_ratio,
-                                                        upsample_type=upsample_type, stride=net.features[i].conv[1][0].stride[1],)
+                                                         act_func=act_func, n_groups=n_groups, downsample_ratio=downsample_ratio,
+                                                         upsample_type=upsample_type, stride=net.features[i].conv[1][0].stride[1],)

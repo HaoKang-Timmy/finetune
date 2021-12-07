@@ -77,17 +77,19 @@ replace_bn_with_gn(net, gn_channel_per_group=8)
 
 ## 1.3 Training Details
 
-| setting            | value             |
-| ------------------ | ----------------- |
-| Pretrained dataset | Imagenet          |
-| Dataset            | CIFAR10           |
-| Epochs             | 40                |
-| Optimizer          | Adam              |
-| Lr(initial)        | 0.05              |
-| Scheduler          | CosineAnnealingLR |
-| Batch size         | 8                 |
-| Weight decay       | 0.0001            |
-| Distributed        | No                |
+| setting            | value                            |
+| ------------------ | -------------------------------- |
+| Pretrained dataset | Imagenet                         |
+| Dataset            | CIFAR10                          |
+| Epochs             | 40                               |
+| Optimizer          | Adam                             |
+| Lr(initial)        | 0.05                             |
+| Scheduler          | CosineAnnealingLR                |
+| Batch size         | 8                                |
+| Weight decay       | 0.0001                           |
+| Distributed        | No                               |
+| Backbone           | MobileNetV2, ProxylessNAS-Mobile |
+| Weight Initialize  | Random                           |
 
 
 
@@ -173,7 +175,7 @@ As for ProxylessNAS-Mobile(same training settings with MobileNetV2):
 | Method       | Dataset | Memory cost | Train accuracy(top1) |
 | ------------ | ------- | ----------- | -------------------- |
 | FT-Last      | CIFAR10 | 613MB       | 85.74%               |
-| TinyTL-B     | CIFAR10 | 442MB       | 93.22%               |
+| TinyTL-B     | CIFAR10 | 442MB       | 93.70%               |
 | TinyTL-L     | CIFAR10 | 471MB       | 96.03%               |
 | TinyTL-L+B   | CIFAR10 | 486MB       | 95.93%               |
 | FT-Norm+Last | CIFAR10 | 639MB       | 94.51%               |
