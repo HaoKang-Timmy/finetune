@@ -147,7 +147,7 @@ def main_worker(gpu, ngpus_per_node, args):
             param.requires_grad = False
         for param in model.classifier.parameters():
             param.requires_grad = True
-        optimizer = torch.optim.AdamW(model.classifier.parameters(), args.lr,
+        optimizer = torch.optim.Adam(model.classifier.parameters(), args.lr,
                                      weight_decay=args.weight_decay)
     
     elif args.train_method == 'low':
@@ -158,12 +158,12 @@ def main_worker(gpu, ngpus_per_node, args):
         low_params = filter(lambda p: id(p) in low_map, model.parameters())
         deep_params = filter(lambda p: id(
             p) not in low_map+classifier_map, model.parameters())
-        optimizer = torch.optim.AdamW([{'params': classifier_params}, {
+        optimizer = torch.optim.Adam([{'params': classifier_params}, {
                                         'params': low_params, 'lr': args.lr*0.6}, {'params': deep_params, 'lr': args.lr*0.4}], lr=args.lr,weight_decay=args.weight_decay)
     elif args.train_method == 'deep':
         for param in model.parameters():
             param.requires_grad = True
-            optimizer = torch.optim.AdamW(model.parameters(), args.lr,
+            optimizer = torch.optim.Adam(model.parameters(), args.lr,
                                             weight_decay=args.weight_decay)
     elif args.train_method == 'TinyTL-L':
         for param in model.parameters():
@@ -171,7 +171,7 @@ def main_worker(gpu, ngpus_per_node, args):
         for param in model.classifier.parameters():
             param.requires_grad = True
         LiteResidualModule.insert_lite_residual(model)
-        optimizer = torch.optim.AdamW(model.parameters(), args.lr,
+        optimizer = torch.optim.Adam(model.parameters(), args.lr,
                     weight_decay=args.weight_decay)
     elif args.train_method == 'TinyTL-L+B':
         for param in model.parameters():
@@ -184,7 +184,7 @@ def main_worker(gpu, ngpus_per_node, args):
         for name, param in model.named_parameters():
             if 'bias' in name:
                 param.requires_grad = True
-        optimizer = torch.optim.AdamW(model.parameters(), args.lr,
+        optimizer = torch.optim.Adam(model.parameters(), args.lr,
                     weight_decay=args.weight_decay)
     elif args.train_method == 'TinyTL-B':
         for param in model.parameters():
@@ -194,7 +194,7 @@ def main_worker(gpu, ngpus_per_node, args):
                 param.requires_grad = True
         for param in model.classifier.parameters():
             param.requires_grad = True
-        optimizer = torch.optim.AdamW(model.parameters(), args.lr,
+        optimizer = torch.optim.Adam(model.parameters(), args.lr,
                             weight_decay=args.weight_decay)
             # l2sp_op =l2sp(model.parameters(), lr=args.lr*0.5)
     elif args.train_method == 'norm+last':

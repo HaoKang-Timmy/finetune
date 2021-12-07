@@ -77,7 +77,7 @@ replace_bn_with_gn(net, gn_channel_per_group=8)
 
 ## 1.3 Training Details
 
-Training Details. I freeze the memory-heavy modules and only update memory-efficient modules (bias, lite residual, classifier head) during transfer learning. The models are fine-tuned for 40 epochs using the AdamW optimizer with 8 batches on 4 GPUs. The initial learning rate is set to be 4e-4 with exp_decay scheduler(gamma = 0.9)
+Training Details. I freeze the memory-heavy modules and only update memory-efficient modules (bias, lite residual, classifier head) during transfer learning. The models are fine-tuned for 40 epochs using the Adam optimizer with 8 batches on 1 GPUs. The initial learning rate is set to be 1e-4 with exp_decay scheduler(gamma = 0.9)
 
 ## 1.4 Usage
 
@@ -138,18 +138,18 @@ Comparison between TinyTL and conventional transfer learning methods. For object
 
 | Method       | Dataset | Memory cost | Train accuracy(top1) |
 | ------------ | ------- | ----------- | -------------------- |
-| FT-Last      | CIFAR10 | 3957MB      | 72.9%                |
-| TinyTL-B     | CIFAR10 | 3324MB      | 73.8%                |
-| TinyTL-L     | CIFAR10 | 3101MB      | 93.7%                |
-| TinyTL-L+B   | CIFAR10 | 3196MB      | 92.6%                |
-| FT-Norm+Last | CIFAR10 | 4016MB      | 73.84%               |
-| FT-Full      | CIFAR10 | 5192MB      | 96.16%               |
+| FT-Last      | CIFAR10 | 990MB       | 73.54%               |
+| TinyTL-B     | CIFAR10 | 756MB       | 90.98%               |
+| TinyTL-L     | CIFAR10 | 775MB       | 93.72%               |
+| TinyTL-L+B   | CIFAR10 | 799MB       | 93.61%               |
+| FT-Norm+Last | CIFAR10 | 1004MB      | 73.84%               |
+| FT-Full      | CIFAR10 | 1298MB      | 96.16%               |
 
 ### 2.2 Curve
 
 <img src="./pic/image-20211206012001543.png" alt="image-20211206012001543" style="zoom: 200%;" />
 
-![image-20211206012154928](./pic/image-20211206012154928.png)
+![image-20211206213825385](/Users/catbeta/Library/Application Support/typora-user-images/image-20211206213825385.png)
 
 Top1 accuracy, loss of different transfer learning methods. TinyTL-L and TinyTL-L+B have similar results with Finetune Full layers.
 
