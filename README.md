@@ -157,6 +157,15 @@ Resolution: 224
 | FT-Norm+Last | CIFAR10 | 1004MB      | 73.84%               |
 | FT-Full      | CIFAR10 | 1298MB      | 96.16%               |
 
+As for proxynetmoble:
+
+| Method   | Dataset | Train accuracy(top1) |
+| -------- | ------- | -------------------- |
+| TinyTL-L | CIFAR10 | 96.03%               |
+| TinyTL-B | CIFAR10 | 93.22%               |
+
+
+
 ### 2.2 Curve
 
 <img src="./pic/image-20211206012001543.png" alt="image-20211206012001543" style="zoom: 200%;" />
@@ -262,5 +271,4 @@ I use MobileNetV2 as my backbone, Also, I set checkpoints at each InversResidual
 | 16         | 2105MB                          | 1393MB                       |
 | 32         | 3541MB                          | 2119MB                       |
 | 64         | 7492MB                          | 3291MB                       |
-
 
