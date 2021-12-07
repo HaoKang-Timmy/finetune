@@ -187,7 +187,7 @@ Resolution: 224
 
 ### 2.2 Curve
 
-#### 2.2.1 MobileNetV2
+#### 2.2.1 MobileNet
 
 <img src="./pic/image-20211206012001543.png" alt="image-20211206012001543" style="zoom: 200%;" />
 
@@ -197,7 +197,9 @@ Top1 accuracy, loss of different transfer learning methods. TinyTL-L and TinyTL-
 
 #### 2.2.2 ProxyNAS-Mobile
 
+<img src="./pic/image-20211208022521931.png" alt="image-20211208022521931" style="zoom:200%;" />
 
+The result is the same as the paper within 0.5% accuracy decay(except for FT-Last, which is about 1.5%). Similar to MobileNetV2, the rank of each finetune strategy is the same. However, ProxyNas-Mobile is about 2% higher than MobileNetV2. Another thing is that FL-Last and FL-Last+Last start at a similar point to TinyTL-B and TinyTL-L, but they decay faster and get better accuracy.
 
 ### 2.3 command
 
