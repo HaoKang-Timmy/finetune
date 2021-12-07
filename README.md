@@ -159,14 +159,18 @@ Resolution: 224
 
 As for ProxylessNAS-Mobile:
 
-| Method   | Dataset | Train accuracy(top1) |
-| -------- | ------- | -------------------- |
-| TinyTL-L | CIFAR10 | 96.03%               |
-| TinyTL-B | CIFAR10 | 93.22%               |
+| Method       | Dataset | Train accuracy(top1) |
+| ------------ | ------- | -------------------- |
+| FT-Last      | CIFAR10 | 85.74%               |
+| TinyTL-B     | CIFAR10 | 93.22%               |
+| TinyTL-L     | CIFAR10 | 96.03%               |
+| TinyTL-L+B   | CIFAR10 | 95.93%               |
+| FT-Norm+Last | CIFAR10 | 94.51%               |
+| FT-Full      | CIFAR10 | 96.97%               |
 
 
 
-### 2.2 Curve
+### 2.2 Curve for MobileNetV2
 
 <img src="./pic/image-20211206012001543.png" alt="image-20211206012001543" style="zoom: 200%;" />
 
