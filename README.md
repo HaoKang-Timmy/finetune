@@ -168,7 +168,7 @@ Resolution: 224
 | Method       | Dataset | Memory cost | Train accuracy(top1) |
 | ------------ | ------- | ----------- | -------------------- |
 | FT-Last      | CIFAR10 | 990MB       | 73.54%               |
-| TinyTL-B     | CIFAR10 | 756MB       | 90.98%               |
+| TinyTL-B     | CIFAR10 | 756MB       | 89.98%               |
 | TinyTL-L     | CIFAR10 | 775MB       | 93.72%               |
 | TinyTL-L+B   | CIFAR10 | 799MB       | 93.61%               |
 | FT-Norm+Last | CIFAR10 | 1004MB      | 91.84%               |
@@ -180,10 +180,10 @@ Resolution: 224
 | ------------ | ------- | ----------- | -------------------- |
 | FT-Last      | CIFAR10 | 613MB       | 83.74%               |
 | TinyTL-B     | CIFAR10 | 442MB       | 93.70%               |
-| TinyTL-L     | CIFAR10 | 471MB       | 95.80%               |
+| TinyTL-L     | CIFAR10 | 471MB       | 95.30%               |
 | TinyTL-L+B   | CIFAR10 | 486MB       | 95.93%               |
 | FT-Norm+Last | CIFAR10 | 639MB       | 94.51%               |
-| FT-Full      | CIFAR10 | 712MB       | 96.97%               |
+| FT-Full      | CIFAR10 | 712MB       | 96.67%               |
 
 
 
