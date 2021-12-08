@@ -137,7 +137,7 @@ python train.py -h
 
 ### 1.4.3 Example
 
-Command examples are stored in `./train_script/`
+Command examples are stored in `./train_script/` . Refer to distributed.sh for more informations.
 
 ## 2 Main Results
 
@@ -201,19 +201,7 @@ The result is within 0.5% accuracy compared to the paper(except for FT-Last, whi
 
 ### 2.3 command
 
-MobileNetV2
-
-```
-python train.py --a mobilenet_v2 --wd 0.0001 --lr 0.05 --epochs 8 --gpu 1  --tensorboard --train-method norm+last  -t CIFAR10 --pretrained  ./data
-```
-
-ProxylessNAS-Mobile
-
-```
-python train.py --proxy --wd 0.0001 --lr 0.05 --epochs 8 --gpu 1  --tensorboard --train-method norm+last  -t CIFAR10 --pretrained  ./data
-```
-
-
+Command examples are stored in `./train_script/` .Refer to  `MobileNetV2.sh` and   `ProxyNasMobile.sh` for more informations.
 
 ## 3 Conclusion
 
