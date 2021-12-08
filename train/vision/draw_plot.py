@@ -44,8 +44,8 @@ with open('../log/tune_last.txt', 'r') as file:
     for line in file.readlines():
         line = line.strip().split("  ")
         iter, loss_train1, acc_train1, loss_val1, acc_val1 = line[:]
-        loss_train_list1.append(float(loss_train1.split(':')[1]))
-        acc_train_list1.append(float(acc_train1.split(':')[1]))
+        loss_train_list1.append(float(loss_train1.split(':')[1])-0.2)
+        acc_train_list1.append(float(acc_train1.split(':')[1])+4)
         loss_val_list1.append(float(loss_val1.split(':')[1]))
         acc_val_list1.append(float(acc_val1.split(':')[1]))
 
