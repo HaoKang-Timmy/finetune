@@ -55,6 +55,7 @@ def train(train_loader, model, criterion, optimizer, epoch, args, ngpus_per_node
         #     writer.add_scalar('Loss/train', losses.val, i)
         #     writer.add_scalar('acc/train', top1.val, i)
 
+
         # compute gradient and do SGD step
         optimizer.zero_grad()
         loss.backward()
