@@ -137,11 +137,7 @@ python train.py -h
 
 ### 1.4.3 Example
 
-```
-python train.py --a mobilenet_v2 --dist-url 'tcp://127.0.0.1:1234' --dist-backend 'nccl' --multiprocessing-distributed --world-size 1 --rank 0 --seed 1 --tensorboard --train-method [method]  -t CIFAR10 --pretrained  [CIFAR_DATAPATH]
-```
-
-Change [method], [CIFAR_DATAPATH] to what it should be.
+Command examples are stored in `./train_script/`
 
 ## 2 Main Results
 
