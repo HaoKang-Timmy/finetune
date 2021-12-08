@@ -31,33 +31,33 @@ loss_train_list5 = []
 acc_train_list5 = []
 loss_val_list5 = []
 acc_val_list5 = []
-with open('../log/fine_full.txt', 'r') as file:
+with open('../log/tune_adamw.txt', 'r') as file:
     for line in file.readlines():
         line = line.strip().split("  ")
         iter, loss_train, acc_train, loss_val, acc_val = line[:]
         iter_list.append(int(iter.split(':')[1]))
         loss_train_list.append(float(loss_train.split(':')[1]))
         acc_train_list.append(float(acc_train.split(':')[1]))
-        loss_val_list.append(float(loss_val.split(':')[1])-0.1)
+        loss_val_list.append(float(loss_val.split(':')[1]))
         acc_val_list.append(float(acc_val.split(':')[1]))
-with open('../log/Last.txt', 'r') as file:
+with open('../log/tune_last.txt', 'r') as file:
     for line in file.readlines():
         line = line.strip().split("  ")
         iter, loss_train1, acc_train1, loss_val1, acc_val1 = line[:]
-        loss_train_list1.append(float(loss_train1.split(':')[1])-0.3)
-        acc_train_list1.append(float(acc_train1.split(':')[1])+10)
-        loss_val_list1.append(float(loss_val1.split(':')[1])-0.3)
-        acc_val_list1.append(float(acc_val1.split(':')[1])+10)
+        loss_train_list1.append(float(loss_train1.split(':')[1]))
+        acc_train_list1.append(float(acc_train1.split(':')[1]))
+        loss_val_list1.append(float(loss_val1.split(':')[1]))
+        acc_val_list1.append(float(acc_val1.split(':')[1]))
 
-with open('../log/Tiny_norm_last.txt', 'r') as file:
+with open('../log/tune_normlast.txt', 'r') as file:
     for line in file.readlines():
         line = line.strip().split("  ")
         iter, loss_train2, acc_train2, loss_val2, acc_val2 = line[:]
-        loss_train_list2.append(float(loss_train2.split(':')[1])-0.4)
-        acc_train_list2.append(float(acc_train2.split(':')[1])+13)
-        loss_val_list2.append(float(loss_val2.split(':')[1])-0.05)
-        acc_val_list2.append(float(acc_val2.split(':')[1])+11)
-with open('../log/TinyTL-B.txt', 'r') as file:
+        loss_train_list2.append(float(loss_train2.split(':')[1]))
+        acc_train_list2.append(float(acc_train2.split(':')[1]))
+        loss_val_list2.append(float(loss_val2.split(':')[1]))
+        acc_val_list2.append(float(acc_val2.split(':')[1]))
+with open('../log/tune_tinybias.txt', 'r') as file:
     for line in file.readlines():
         line = line.strip().split("  ")
         iter, loss_train3, acc_train3, loss_val3, acc_val3 = line[:]
@@ -65,7 +65,7 @@ with open('../log/TinyTL-B.txt', 'r') as file:
         acc_train_list3.append(float(acc_train3.split(':')[1]))
         loss_val_list3.append(float(loss_val3.split(':')[1]))
         acc_val_list3.append(float(acc_val3.split(':')[1]))
-with open('../log/TinyTL-L.txt', 'r') as file:
+with open('../log/tune_tinytl-L.txt', 'r') as file:
     for line in file.readlines():
         line = line.strip().split("  ")
         iter, loss_train4, acc_train4, loss_val4, acc_val4 = line[:]
@@ -73,7 +73,7 @@ with open('../log/TinyTL-L.txt', 'r') as file:
         acc_train_list4.append(float(acc_train4.split(':')[1]))
         loss_val_list4.append(float(loss_val4.split(':')[1]))
         acc_val_list4.append(float(acc_val4.split(':')[1]))
-with open('../log/TinyTL-L+B.txt', 'r') as file:
+with open('../log/tune_tinytl-L+B.txt', 'r') as file:
     for line in file.readlines():
         line = line.strip().split("  ")
         iter, loss_train5, acc_train5, loss_val5, acc_val5 = line[:]

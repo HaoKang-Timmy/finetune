@@ -1,3 +1,7 @@
+---
+typora-copy-images-to: ./pic
+---
+
 # TinyTL
 
 ## 1 Setup
@@ -197,7 +201,7 @@ Top1 accuracy, loss of different transfer learning methods. TinyTL-L and TinyTL-
 
 <img src="./pic/image-20211206012001543.png" alt="image-20211206012001543" style="zoom: 200%;" />
 
-![image-20211208150432732](./pic/image-20211208150432732.png)
+![image-20211208151626579](./pic/image-20211208151626579.png)
 
 The result is within 0.5% accuracy compared to the paper(except for FT-Last, which is about 2%). Similar to MobileNetV2, the rank of each finetune strategy is the same. However, ProxyNas-Mobile is about 2% higher than MobileNetV2 in most strategies(except in FT-Last).
 
