@@ -1,5 +1,3 @@
-
-
 # TinyTL
 
 ## 1 Setup
@@ -10,7 +8,7 @@ Following the common practice, I use ImageNet as the pretraining dataset and tra
 
 ## 1.2 Model Architecture
 
-Though TInyTL provides ProxylessNAS-Mobile, I choose MobileNetV2 as my backbone. For each InvertedResidual Block, I inserted with a lite residual module presented in https://proceedings.neurips.cc/paper/2020/file/81f7acabd411274fcf65ce2070ed568a-Paper.pdf. The group size is 2, and the kernel size is 3. The residual module code is shown below.
+TInyTL only provides ProxylessNAS-Mobile, I choose MobileNetV2 as my backbone. Also, I test ProxylessNAS-Mobile on my training settings, too. For each InvertedResidual Block, I inserted with a lite residual module presented in https://proceedings.neurips.cc/paper/2020/file/81f7acabd411274fcf65ce2070ed568a-Paper.pdf. The group size is 2, and the kernel size is 3. The residual module code is shown below.
 
 ```python
 class LiteResidualModule(nn.Module):
@@ -77,19 +75,19 @@ replace_bn_with_gn(net, gn_channel_per_group=8)
 
 ## 1.3 Training Details
 
-| setting            | value                            |
-| ------------------ | -------------------------------- |
-| Pretrained dataset | Imagenet                         |
-| Dataset            | CIFAR10                          |
-| Epochs             | 40                               |
-| Optimizer          | Adam                             |
-| Lr(initial)        | 0.05                             |
-| Scheduler          | CosineAnnealingLR                |
-| Batch size         | 8                                |
-| Weight decay       | 0.0001                           |
-| Distributed        | No                               |
-| Backbone           | MobileNetV2, ProxylessNAS-Mobile |
-| Weight Initialize  | Random                           |
+| setting                                       | value                            |
+| --------------------------------------------- | -------------------------------- |
+| Pretrained dataset                            | Imagenet                         |
+| Dataset                                       | CIFAR10                          |
+| Epochs                                        | 40                               |
+| Optimizer                                     | Adam                             |
+| Lr(initial)                                   | 0.05                             |
+| Scheduler                                     | CosineAnnealingLR                |
+| Batch size                                    | 8                                |
+| Weight decay                                  | 0.0001                           |
+| Distributed                                   | No                               |
+| Backbone                                      | MobileNetV2, ProxylessNAS-Mobile |
+| Weight Initialization for Lite Residual Model | Random Weights                   |
 
 
 
@@ -169,14 +167,14 @@ Resolution: 224
 | TinyTL-B     | CIFAR10 | 756MB       | 90.98%               |
 | TinyTL-L     | CIFAR10 | 775MB       | 93.72%               |
 | TinyTL-L+B   | CIFAR10 | 799MB       | 93.61%               |
-| FT-Norm+Last | CIFAR10 | 1004MB      | 73.84%               |
+| FT-Norm+Last | CIFAR10 | 1004MB      | 91.84%               |
 | FT-Full      | CIFAR10 | 1298MB      | 96.16%               |
 
 #### 2.1.2 ProxylessNAS-Mobile
 
 | Method       | Dataset | Memory cost | Train accuracy(top1) |
 | ------------ | ------- | ----------- | -------------------- |
-| FT-Last      | CIFAR10 | 613MB       | 85.74%               |
+| FT-Last      | CIFAR10 | 613MB       | 83.74%               |
 | TinyTL-B     | CIFAR10 | 442MB       | 93.70%               |
 | TinyTL-L     | CIFAR10 | 471MB       | 95.80%               |
 | TinyTL-L+B   | CIFAR10 | 486MB       | 95.93%               |
@@ -191,15 +189,17 @@ Resolution: 224
 
 <img src="./pic/image-20211206012001543.png" alt="image-20211206012001543" style="zoom: 200%;" />
 
-![image-20211207131138578](./pic/image-20211207131138578.png)
+![image-20211208111325690](./pic/image-20211208111325690.png)
 
-Top1 accuracy, loss of different transfer learning methods. TinyTL-L and TinyTL-L+B have similar results with Finetune Full layers.
+Top1 accuracy, loss of different transfer learning methods. TinyTL-L and TinyTL-L+B have similar results with Finetune Full layers. They outperform FT-Norm+Last.
 
 #### 2.2.2 ProxyNAS-Mobile
 
+<img src="./pic/image-20211206012001543.png" alt="image-20211206012001543" style="zoom: 200%;" />
+
 <img src="./pic/image-20211208022521931.png" alt="image-20211208022521931" style="zoom:200%;" />
 
-The result is the same as the paper within 0.5% accuracy decay(except for FT-Last, which is about 1.5%). Similar to MobileNetV2, the rank of each finetune strategy is the same. However, ProxyNas-Mobile is about 2% higher than MobileNetV2. Another thing is that FL-Last and FL-Last+Last start at a similar point to TinyTL-B and TinyTL-L, but they decay faster and get better accuracy.
+The result is within 0.5% accuracy compared to the paper(except for FT-Last, which is about (2%). Similar to MobileNetV2, the rank of each finetune strategy is the same. However, ProxyNas-Mobile is about 2% higher than MobileNetV2 in most strategies(except in. 
 
 ### 2.3 command
 

@@ -165,7 +165,6 @@ def main_worker(gpu, ngpus_per_node, args):
             param.requires_grad = True
         optimizer = torch.optim.Adam(model.classifier.parameters(), args.lr,
                                      weight_decay=args.weight_decay)
-
     elif args.train_method == 'low':
         classifier_map = list(map(id, model.classifier.parameters()))
         low_map = list(map(id, model.features[-5:]))
@@ -221,8 +220,8 @@ def main_worker(gpu, ngpus_per_node, args):
                 param.requires_grad = True
         for param in model.classifier.parameters():
             param.requires_grad = True
-        optimizer = torch.optim.AdamW(model.parameters(), args.lr,
-                                      weight_decay=args.weight_decay)
+        optimizer = torch.optim.Adam(model.parameters(), args.lr,
+                                     weight_decay=args.weight_decay)
         replace_bn_with_gn(model, gn_channel_per_group=8)
     if not torch.cuda.is_available():
         print('using CPU')
