@@ -17,6 +17,7 @@ import torchvision.transforms as transforms
 import torchvision.models as models
 from ofa.model_zoo import proxylessnas_mobile
 from ofa.utils.layers import LinearLayer
+from ofa.imagenet_classification.run_manager import RunManager
 from torch.utils.tensorboard import SummaryWriter
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("__")

@@ -77,19 +77,19 @@ replace_bn_with_gn(net, gn_channel_per_group=8)
 
 ## 1.3 Training Details
 
-| setting                                       | value                            |
-| --------------------------------------------- | -------------------------------- |
-| Pretrained dataset                            | Imagenet                         |
-| Dataset                                       | CIFAR10                          |
-| Epochs                                        | 40                               |
-| Optimizer                                     | Adam                             |
-| Lr(initial)                                   | 0.05                             |
-| Scheduler                                     | CosineAnnealingLR                |
-| Batch size                                    | 8                                |
-| Weight decay                                  | 0.0001                           |
-| Distributed                                   | No                               |
-| Backbone                                      | MobileNetV2, ProxylessNAS-Mobile |
-| Weight Initialization for Lite Residual Model | Random Weights                   |
+| setting                                       | value                                                        |
+| --------------------------------------------- | ------------------------------------------------------------ |
+| Pretrained dataset                            | Imagenet                                                     |
+| Dataset                                       | CIFAR10                                                      |
+| Epochs                                        | 50                                                           |
+| Optimizer                                     | Adam                                                         |
+| Lr(initial)                                   | 3e-4                                                         |
+| Scheduler                                     | CosineAnnealingLR                                            |
+| Batch size                                    | 8                                                            |
+| Weight decay                                  | 1e-4                                                         |
+| Distributed                                   | No                                                           |
+| Backbone                                      | MobileNetV2, ProxylessNAS-Mobile                             |
+| Weight Initialization for Lite Residual Model | Random Weights（MobileNetV2)/hanlab pretrained(ProxyNas-Mobile) |
 
 
 
