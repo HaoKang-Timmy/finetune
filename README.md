@@ -11,7 +11,7 @@ Following the common practice, I use ImageNet as the pretraining dataset and tra
 
 ## 1.2 Model Architecture
 
-TInyTL only provides ProxylessNAS-Mobile, I choose MobileNetV2 as my backbone. Also, I test ProxylessNAS-Mobile on my training settings, too. For each InvertedResidual Block, I inserted with a lite residual module presented in https://proceedings.neurips.cc/paper/2020/file/81f7acabd411274fcf65ce2070ed568a-Paper.pdf. The group size is 2, and the kernel size is 3. The residual module code is shown below.
+TInyTL only provides ProxylessNAS-Mobile, I choose MobileNetV2 as my backbone. Also, I test ProxylessNAS-Mobile on my training settings, too. For each InvertedResidual Block, I inserted with a lite residual module presented in https://proceedings.neurips.cc/paper/2020/file/81f7acabd411274fcf65ce2070ed568a-Paper.pdf. The group size is 2, and the kernel size is 3（different in ProxyNAS-Mobile). The residual module code is shown below.
 
 ```python
 class LiteResidualModule(nn.Module):
