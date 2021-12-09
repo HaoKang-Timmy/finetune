@@ -3,7 +3,7 @@ import os
 import random
 import warnings
 from utils import train, validate, adjust_learning_rate, save_checkpoint, prepare_dataloader, LiteResidualModule
-from ofa.utils import replace_bn_with_gn, init_models
+from ofa.utils import replace_bn_with_gn, init_models,download_url
 import torch
 import torch.nn as nn
 import torch.nn.parallel
@@ -158,6 +158,9 @@ def main_worker(gpu, ngpus_per_node, args):
             model.classifier = LinearLayer(1280, 100, dropout_rate=0.2)
         classification_head.append(model.classifier)
         init_models(classification_head)
+        init_file = download_url('https://hanlab.mit.edu/projects/tinyml/tinyTL/files/'
+                                 'proxylessnas_mobile+lite_residual@imagenet@ws+gn', model_dir='~/.tinytl/')
+        model.load_state_dict(torch.load(init_file, map_location='cpu')['state_dict'])
     if args.train_method == 'finetune':
         for param in model.parameters():
             param.requires_grad = False
@@ -235,7 +238,7 @@ def main_worker(gpu, ngpus_per_node, args):
             param.requires_grad = True
         optimizer = torch.optim.Adam(model.parameters(), args.lr,
                                      weight_decay=args.weight_decay)
-        #replace_bn_with_gn(model, gn_channel_per_group=8)
+        replace_bn_with_gn(model, gn_channel_per_group=8)
     if not torch.cuda.is_available():
         print('using CPU')
     elif args.distributed:
