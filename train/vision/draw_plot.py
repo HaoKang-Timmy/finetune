@@ -25,7 +25,7 @@ acc_val_list3 = []
 loss_train_list4 = []
 acc_train_list4 = []
 loss_val_list4 = []
-acc_val_list4 = []
+acc_val_list4 = [] 
 
 loss_train_list5 = []
 acc_train_list5 = []
