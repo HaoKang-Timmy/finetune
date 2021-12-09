@@ -114,7 +114,7 @@ replace_bn_with_gn(net, gn_channel_per_group=8)
 
 ### 1.4.2 Command
 
-Training file stores in ./train/train.py.
+Training file stores in `./train/train.py`.
 
 ```
 usage: train.py [-h] [--a ARCH] [-j N] [--epochs N] [--start-epoch N] [-b N]
@@ -214,7 +214,7 @@ I use two PyTorch mechanisms to implement gradient checkpoint. The first one is 
 
 ## 2 Code and Usage
 
-Two implementations are shown below
+Two implementations are shown below, and code is stored in `./train/gradient_checkpoint/utils` .
 
 ### 2.1 Checkpoint Package
 
@@ -280,7 +280,7 @@ run_function is a `torch.utils.Function` object, `input` is input tensors for th
 
 ## 3 Results
 
-I use MobileNetV2 as my backbone, Also, I set checkpoints at each InversResidual Block. You could see more information in `./train/gradient_checkpoint/example.py`.
+I use MobileNetV2 as my backbone, Also, I set checkpoints at each InversResidual Block. You could see more information in `./train/gradient_checkpoint/example.py`. 
 
 | Batch size | Memory cost(without checkpoint) | Memory cost(with checkpoint) |
 | ---------- | ------------------------------- | ---------------------------- |
