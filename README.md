@@ -141,7 +141,7 @@ python train.py -h
 
 ### 1.4.3 Example
 
-Command examples are stored in `./train_script/` . Refer to distributed.sh for more informations.
+Command examples are stored in `./train_script/` . Refer to `distributed.sh` for more informations.
 
 ## 2 Main Results
 
