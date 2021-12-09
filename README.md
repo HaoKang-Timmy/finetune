@@ -1,6 +1,4 @@
 
-
-
 # TinyTL
 
 ## 1 Setup
@@ -188,7 +186,7 @@ Resolution: 224
 
 <img src="./pic/image-20211206012001543.png" alt="image-20211206012001543" style="zoom: 200%;" />
 
-![image-20211209164140110](./pic/image-20211209164140110.png)
+![image-20211209204533409](./pic/image-20211209204533409.png)
 
 Top1 accuracy, loss of different transfer learning methods. TinyTL-L and TinyTL-L+B have similar results with Finetune Full layers. They outperform FT-Norm+Last.
 
