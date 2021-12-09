@@ -7,9 +7,8 @@ import torchvision.transforms as transforms
 import torch.utils.data.distributed
 from torch.optim.optimizer import Optimizer
 import torch.nn.functional as F
-from typing import List, Optional
+from typing import List
 from torch import Tensor
-import math
 import torch.nn as nn
 from ofa.utils import get_same_padding, make_divisible, build_activation, init_models
 from collections import OrderedDict

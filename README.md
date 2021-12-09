@@ -165,11 +165,11 @@ Resolution: 224
 
 | Method       | Dataset | Memory cost | Train accuracy(top1) |
 | ------------ | ------- | ----------- | -------------------- |
-| FT-Last      | CIFAR10 | 990MB       | 73.54%               |
-| TinyTL-B     | CIFAR10 | 756MB       | 89.98%               |
-| TinyTL-L     | CIFAR10 | 775MB       | 93.72%               |
-| TinyTL-L+B   | CIFAR10 | 799MB       | 93.61%               |
-| FT-Norm+Last | CIFAR10 | 1004MB      | 91.84%               |
+| FT-Last      | CIFAR10 | 990MB       | 76.37%               |
+| TinyTL-B     | CIFAR10 | 756MB       | 90.76%               |
+| TinyTL-L     | CIFAR10 | 775MB       | 93.26%               |
+| TinyTL-L+B   | CIFAR10 | 799MB       | 94.22%               |
+| FT-Norm+Last | CIFAR10 | 1004MB      | 93.44%               |
 | FT-Full      | CIFAR10 | 1298MB      | 96.16%               |
 
 #### 2.1.2 ProxylessNAS-Mobile
@@ -191,7 +191,7 @@ Resolution: 224
 
 <img src="./pic/image-20211206012001543.png" alt="image-20211206012001543" style="zoom: 200%;" />
 
-![image-20211208111325690](./pic/image-20211208111325690.png)
+![image-20211209164140110](./pic/image-20211209164140110.png)
 
 Top1 accuracy, loss of different transfer learning methods. TinyTL-L and TinyTL-L+B have similar results with Finetune Full layers. They outperform FT-Norm+Last.
 

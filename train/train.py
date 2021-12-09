@@ -2,8 +2,9 @@ import argparse
 import os
 import random
 import warnings
+from torchvision.models import mobilenet
 from utils import train, validate, adjust_learning_rate, save_checkpoint, prepare_dataloader, LiteResidualModule
-from ofa.utils import replace_bn_with_gn, init_models,download_url
+from ofa.utils import replace_bn_with_gn, init_models, download_url
 import torch
 import torch.nn as nn
 import torch.nn.parallel
@@ -36,7 +37,7 @@ parser.add_argument('--epochs', default=50, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('-b', '--batch-size', default=128, type=int,
+parser.add_argument('-b', '--batch-size', default=8, type=int,
                     metavar='N',
                     help='mini-batch size (default: 256), this is the total '
                          'batch size of all GPUs on the current node when '
@@ -160,7 +161,8 @@ def main_worker(gpu, ngpus_per_node, args):
         init_models(classification_head)
         init_file = download_url('https://hanlab.mit.edu/projects/tinyml/tinyTL/files/'
                                  'proxylessnas_mobile+lite_residual@imagenet@ws+gn', model_dir='~/.tinytl/')
-        model.load_state_dict(torch.load(init_file, map_location='cpu')['state_dict'])
+        model.load_state_dict(torch.load(
+            init_file, map_location='cpu')['state_dict'])
     if args.train_method == 'finetune':
         for param in model.parameters():
             param.requires_grad = False
@@ -208,7 +210,7 @@ def main_worker(gpu, ngpus_per_node, args):
             param.requires_grad = False
         for name, param in model.named_parameters():
             if 'bias' in name:
-                
+
                 param.requires_grad = True
         for param in model.classifier.parameters():
             param.requires_grad = True
@@ -216,21 +218,18 @@ def main_worker(gpu, ngpus_per_node, args):
                                      weight_decay=args.weight_decay)
         # l2sp_op =l2sp(model.parameters(), lr=args.lr*0.5)
     elif args.train_method == 'norm+last':
-        #print(model)
+        # print(model)
         for param in model.parameters():
             param.requires_grad = False
         if args.proxy == True:
             for name, param in model.named_parameters():
-                print(name)
                 if 'bn' in name:
-                    print("bn")
                     param.requires_grad = True
                 if 'gn' in name:
                     param.requires_grad = True
-        else:
+        elif args.a == 'mobilenet_v2':
             for name, param in model.named_parameters():
-                if '0.1' or '1.1' or '3' in name:
-                    print(name)
+                if '0.1' or '1.1' in name:
                     param.requires_grad = True
         # for m in model.features:
         #     print(m)
@@ -272,7 +271,7 @@ def main_worker(gpu, ngpus_per_node, args):
             writer = SummaryWriter()
 
     criterion = nn.CrossEntropyLoss().cuda(args.gpu)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=40)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=50)
     # optionally resume from a checkpoint
     if args.resume:
         if os.path.isfile(args.resume):
