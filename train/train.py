@@ -17,7 +17,6 @@ import torchvision.transforms as transforms
 import torchvision.models as models
 from ofa.model_zoo import proxylessnas_mobile
 from ofa.utils.layers import LinearLayer
-from ofa.imagenet_classification.run_manager import RunManager
 from torch.utils.tensorboard import SummaryWriter
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("__")
@@ -33,16 +32,16 @@ parser.add_argument('--a', '--arch', metavar='ARCH', default='mobilenet_v2',
                     ' (default: resnet18)')
 parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
-parser.add_argument('--epochs', default=40, type=int, metavar='N',
+parser.add_argument('--epochs', default=50, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('-b', '--batch-size', default=8, type=int,
+parser.add_argument('-b', '--batch-size', default=128, type=int,
                     metavar='N',
                     help='mini-batch size (default: 256), this is the total '
                          'batch size of all GPUs on the current node when '
                          'using Data Parallel or Distributed Data Parallel')
-parser.add_argument('--lr', '--learning-rate', default=0.05, type=float,
+parser.add_argument('--lr', '--learning-rate', default=3e-4, type=float,
                     metavar='LR', help='initial learning rate', dest='lr')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M',
                     help='momentum')
@@ -135,11 +134,11 @@ def main_worker(gpu, ngpus_per_node, args):
                                 world_size=args.world_size, rank=args.rank)
     if args.proxy == False:
         if args.pretrained:
-            print("=> using pre-trained model '{}'".format(args.arch))
-            model = models.__dict__[args.arch](pretrained=True)
+            print("=> using pre-trained model '{}'".format(args.a))
+            model = models.__dict__[args.a](pretrained=True)
         else:
-            print("=> creating model '{}'".format(args.arch))
-        model = models.__dict__[args.arch]()
+            print("=> creating model '{}'".format(args.a))
+            model = models.__dict__[args.a]()
         if args.dataset_type == 'CUB200':
             model.classifier[-1] = nn.Linear(1280, 200)
         elif args.dataset_type == 'CIFAR10':
@@ -192,13 +191,12 @@ def main_worker(gpu, ngpus_per_node, args):
     elif args.train_method == 'TinyTL-L+B':
         for param in model.parameters():
             param.requires_grad = False
-        for param in model.parameters():
-            param.requires_grad = False
         for param in model.classifier.parameters():
             param.requires_grad = True
         LiteResidualModule.insert_lite_residual(model)
         for name, param in model.named_parameters():
             if 'bias' in name:
+                print('bias')
                 param.requires_grad = True
         optimizer = torch.optim.Adam(model.parameters(), args.lr,
                                      weight_decay=args.weight_decay)
@@ -207,6 +205,7 @@ def main_worker(gpu, ngpus_per_node, args):
             param.requires_grad = False
         for name, param in model.named_parameters():
             if 'bias' in name:
+                
                 param.requires_grad = True
         for param in model.classifier.parameters():
             param.requires_grad = True
@@ -214,16 +213,29 @@ def main_worker(gpu, ngpus_per_node, args):
                                      weight_decay=args.weight_decay)
         # l2sp_op =l2sp(model.parameters(), lr=args.lr*0.5)
     elif args.train_method == 'norm+last':
+        #print(model)
         for param in model.parameters():
             param.requires_grad = False
-        for name, param in model.named_parameters():
-            if 'norm' in name:
-                param.requires_grad = True
+        if args.proxy == True:
+            for name, param in model.named_parameters():
+                print(name)
+                if 'bn' in name:
+                    print("bn")
+                    param.requires_grad = True
+                if 'gn' in name:
+                    param.requires_grad = True
+        else:
+            for name, param in model.named_parameters():
+                if '0.1' or '1.1' or '3' in name:
+                    print(name)
+                    param.requires_grad = True
+        # for m in model.features:
+        #     print(m)
         for param in model.classifier.parameters():
             param.requires_grad = True
         optimizer = torch.optim.Adam(model.parameters(), args.lr,
                                      weight_decay=args.weight_decay)
-        replace_bn_with_gn(model, gn_channel_per_group=8)
+        #replace_bn_with_gn(model, gn_channel_per_group=8)
     if not torch.cuda.is_available():
         print('using CPU')
     elif args.distributed:
@@ -245,7 +257,7 @@ def main_worker(gpu, ngpus_per_node, args):
         model = model.cuda(args.gpu)
     else:
         # DataParallel will divide and allocate batch_size to all available GPUs
-        if args.arch.startswith('alexnet') or args.arch.startswith('vgg'):
+        if args.a.startswith('alexnet') or args.a.startswith('vgg'):
             model.features = torch.nn.DataParallel(model.features)
             model.cuda()
         else:
@@ -319,7 +331,7 @@ def main_worker(gpu, ngpus_per_node, args):
                                                     and args.rank % ngpus_per_node == 0):
             save_checkpoint({
                 'epoch': epoch + 1,
-                'arch': args.arch,
+                'arch': args.a,
                 'state_dict': model.state_dict(),
                 'best_acc1': best_acc1,
                 'optimizer': optimizer.state_dict(),

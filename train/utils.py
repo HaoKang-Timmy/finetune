@@ -6,7 +6,7 @@ from dataset.dataset_collection import DatasetCollection
 import torchvision.transforms as transforms
 import torch.utils.data.distributed
 from torch.optim.optimizer import Optimizer
-from torch.autograd import Function as F
+import torch.nn.functional as F
 from typing import List, Optional
 from torch import Tensor
 import math
@@ -55,11 +55,11 @@ def train(train_loader, model, criterion, optimizer, epoch, args, ngpus_per_node
         #     writer.add_scalar('Loss/train', losses.val, i)
         #     writer.add_scalar('acc/train', top1.val, i)
 
-
         # compute gradient and do SGD step
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+
         # measure elapsed time
         batch_time.update(time.time() - end)
         end = time.time()
@@ -365,8 +365,6 @@ class LiteResidualModule(nn.Module):
             net.set_bn_param(**bn_param)
         else:
             for i in range(1, 18):
-                print(i)
-                print(net.features[i])
                 if i == 1:
                     net.features[i] = LiteResidualModule(net.features[i], in_channels=net.features[i].conv[0][0].in_channels, out_channels=net.features[i].conv[1].out_channels, expand=expand, kernel_size=3,
                                                          act_func=act_func, n_groups=n_groups, downsample_ratio=downsample_ratio,

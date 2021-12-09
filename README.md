@@ -1,3 +1,7 @@
+---
+typora-copy-images-to: ./pic
+---
+
 
 
 # TinyTL
@@ -172,12 +176,12 @@ Resolution: 224
 
 | Method       | Dataset | Memory cost | Train accuracy(top1) |
 | ------------ | ------- | ----------- | -------------------- |
-| FT-Last      | CIFAR10 | 613MB       | 83.74%               |
-| TinyTL-B     | CIFAR10 | 442MB       | 93.70%               |
-| TinyTL-L     | CIFAR10 | 471MB       | 95.30%               |
+| FT-Last      | CIFAR10 | 613MB       | 81.74%               |
+| TinyTL-B     | CIFAR10 | 442MB       | 93.01%               |
+| TinyTL-L     | CIFAR10 | 471MB       | 95.05%               |
 | TinyTL-L+B   | CIFAR10 | 486MB       | 95.93%               |
-| FT-Norm+Last | CIFAR10 | 639MB       | 94.51%               |
-| FT-Full      | CIFAR10 | 712MB       | 96.67%               |
+| FT-Norm+Last | CIFAR10 | 639MB       | 94.64%               |
+| FT-Full      | CIFAR10 | 712MB       | 96.80%               |
 
 
 
@@ -195,7 +199,7 @@ Top1 accuracy, loss of different transfer learning methods. TinyTL-L and TinyTL-
 
 <img src="./pic/image-20211206012001543.png" alt="image-20211206012001543" style="zoom: 200%;" />
 
-![image-20211208151626579](./pic/image-20211208151626579.png)
+![image-20211209155706631](./pic/image-20211209155706631.png)
 
 The result is within 0.5% accuracy compared to the paper(except for FT-Last, which is about 2%). Similar to MobileNetV2, the rank of each finetune strategy is the same. However, ProxyNas-Mobile is about 2% higher than MobileNetV2 in most strategies(except in FT-Last).
 
