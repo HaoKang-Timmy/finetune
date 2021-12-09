@@ -164,7 +164,7 @@ Resolution: 224
 | ------------ | ------- | ----------- | -------------------- |
 | FT-Last      | CIFAR10 | 990MB       | 76.37%               |
 | TinyTL-B     | CIFAR10 | 756MB       | 90.76%               |
-| TinyTL-L     | CIFAR10 | 775MB       | 93.26%               |
+| TinyTL-L     | CIFAR10 | 775MB       | 93.79%               |
 | TinyTL-L+B   | CIFAR10 | 799MB       | 94.22%               |
 | FT-Norm+Last | CIFAR10 | 1004MB      | 93.44%               |
 | FT-Full      | CIFAR10 | 1298MB      | 96.16%               |
