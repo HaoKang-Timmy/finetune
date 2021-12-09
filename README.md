@@ -9,7 +9,7 @@ Following the common practice, I use ImageNet as the pretraining dataset and tra
 
 ## 1.2 Model Architecture
 
-TInyTL only provides ProxylessNAS-Mobile, I choose MobileNetV2 as my backbone. Also, I test ProxylessNAS-Mobile on my training settings, too. For each InvertedResidual Block, I inserted with a lite residual module presented in https://proceedings.neurips.cc/paper/2020/file/81f7acabd411274fcf65ce2070ed568a-Paper.pdf. The group size is 2, and the kernel size is 3（different in ProxyNAS-Mobile). The residual module code is shown below.
+TInyTL only provides ProxylessNAS-Mobile, I choose MobileNetV2 as my backbone. Also, I test ProxylessNAS-Mobile on my training settings, too. For each InvertedResidual Block, I inserted with a lite residual module presented in https://proceedings.neurips.cc/paper/2020/file/81f7acabd411274fcf65ce2070ed568a-Paper.pdf. The group size is 2, and the kernel size is 3（different in ProxylessNAS-Mobile). The residual module code is shown below.
 
 ```python
 class LiteResidualModule(nn.Module):
@@ -88,7 +88,7 @@ replace_bn_with_gn(net, gn_channel_per_group=8)
 | Weight decay                                  | 1e-4                                                         |
 | Distributed                                   | No                                                           |
 | Backbone                                      | MobileNetV2, ProxylessNAS-Mobile                             |
-| Weight Initialization for Lite Residual Model | Random Weights（MobileNetV2)/hanlab pretrained(ProxyNas-Mobile) |
+| Weight Initialization for Lite Residual Model | Random Weights（MobileNetV2)/hanlab pretrained(ProxylessNAS-Mobile) |
 
 
 
@@ -190,7 +190,7 @@ Resolution: 224
 
 Top1 accuracy, loss of different transfer learning methods. TinyTL-L and TinyTL-L+B have similar results with Finetune Full layers. They outperform FT-Norm+Last.
 
-#### 2.2.2 ProxyNAS-Mobile
+#### 2.2.2 ProxylessNAS-Mobile
 
 <img src="./pic/image-20211206012001543.png" alt="image-20211206012001543" style="zoom: 200%;" />
 
