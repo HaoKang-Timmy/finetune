@@ -10,7 +10,7 @@ import torch.nn.functional as F
 from typing import List
 from torch import Tensor
 import torch.nn as nn
-from ofa.utils import get_same_padding, make_divisible, build_activation, init_models
+from ofa.utils import get_same_padding, make_divisible, build_activation, init_models,download_url
 from collections import OrderedDict
 from ofa.imagenet_classification.networks import ProxylessNASNets
 from ofa.utils.layers import ZeroLayer
@@ -362,6 +362,10 @@ class LiteResidualModule(nn.Module):
                     )
 
             net.set_bn_param(**bn_param)
+            init_file = download_url('https://hanlab.mit.edu/projects/tinyml/tinyTL/files/'
+                                 'proxylessnas_mobile+lite_residual@imagenet@ws+gn', model_dir='~/.tinytl/')
+            net.load_state_dict(torch.load(
+            init_file, map_location='cpu')['state_dict'])
         else:
             for i in range(1, 18):
                 if i == 1:
