@@ -4,7 +4,7 @@ import random
 import warnings
 from torchvision.models import mobilenet
 from utils import train, validate, adjust_learning_rate, save_checkpoint, prepare_dataloader, LiteResidualModule
-from ofa.utils import replace_bn_with_gn, init_models, download_url
+from ofa.utils import replace_bn_with_gn, init_models
 import torch
 import torch.nn as nn
 import torch.nn.parallel
@@ -159,10 +159,7 @@ def main_worker(gpu, ngpus_per_node, args):
             model.classifier = LinearLayer(1280, 100, dropout_rate=0.2)
         classification_head.append(model.classifier)
         init_models(classification_head)
-        init_file = download_url('https://hanlab.mit.edu/projects/tinyml/tinyTL/files/'
-                                 'proxylessnas_mobile+lite_residual@imagenet@ws+gn', model_dir='~/.tinytl/')
-        model.load_state_dict(torch.load(
-            init_file, map_location='cpu')['state_dict'])
+
     if args.train_method == 'finetune':
         for param in model.parameters():
             param.requires_grad = False
