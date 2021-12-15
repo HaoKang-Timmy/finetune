@@ -16,28 +16,39 @@ If we have a minibatch size of n pictures in image classification problems, and 
 
 ![image-20211214143631749](./pic/image-20211214143631749.png)
 
-If we assume that $w_t ≈ w_{t+k} $ , which means that after each batch's backward parameters change a little, (3) and (4) are the same.
+If we assume that w_t ≈ w_{t+k} , which means that after each batch's backward parameters change a little, (3) and (4) are the same.
 
 ## 1.2 Main Results
 
 ### 1.2.1 Settings
 
-| setting            | value                                                        |
-| ------------------ | ------------------------------------------------------------ |
-| Pretrained dataset | Imagenet                                                     |
-| Dataset            | CIFAR10                                                      |
-| Epochs             | 50                                                           |
-| Optimizer          | SGD                                                          |
-| Momentum           | 0.9                                                          |
-| Lr(initial)        | Scaling learning rate with batch size                        |
-| Scheduler          | CosineAnnealingLR                                            |
-| Batch size         | 8 , 256                                                      |
-| Weight decay       | 1e-4                                                         |
-| Distributed        | No                                                           |
-| Backbone           | MobileNetV2                                                  |
-| Finetune strategy  | Random Weights（MobileNetV2)/hanlab pretrained(ProxylessNAS-Mobile) |
+| setting            | value                                 |
+| ------------------ | ------------------------------------- |
+| Pretrained dataset | Imagenet                              |
+| Dataset            | CIFAR10                               |
+| Epochs             | 50                                    |
+| Optimizer          | Adam                                  |
+| Momentum           | 0.9                                   |
+| Lr(initial)        | Scaling learning rate with batch size |
+| Scheduler          | CosineAnnealingLR                     |
+| Batch size         | 8 , 256                               |
+| Weight decay       | 1e-4                                  |
+| Distributed        | Yes                                   |
+| Backbone           | MobileNetV2                           |
+| Finetune strategy  | feature extractor                     |
 
- 
+ ### 1.2.2 Results
+
+| Batchsize | Initial learning rate | val_acc(top1) |
+| --------- | --------------------- | ------------- |
+| 32        | 3e-4                  | 71.2%         |
+| 64        | 6e-4                  | 75.1%         |
+| 128       | 1.2e-3                | 73.1%         |
+| 256       | 2.4e-3                | 73.7%         |
+
+![image-20211215215052481](./pic/image-20211215215052481.png)
+
+We could conclud that smaller batch size has a more unstable curve, which relatively has
 
 
 
@@ -51,19 +62,31 @@ The other reason is that workers of data loader. Data are stored at disks. CPU m
 
 ## 1.2 Main Results
 
-Batch size = 256
+### 1.2.1 Settings
 
 Backbone = MobileNetV2
 
 Picture size = 3\*224\*224
 
-| CPU workers | time per batch per GPU |
-| ----------- | ---------------------- |
-| 4           | 4.9s                   |
-| 8           |                        |
-| 16          | 1.8s                   |
+Dataset = CIFAR10
 
+### 1.2.2 Results
 
+| Dataset  | CPU workers | batch_size | cudnn.deterministic | cudnn.benchmark | train and load time per batch per GPU | load time per epoch |
+| -------- | ----------- | ---------- | ------------------- | --------------- | ------------------------------------- | ------------------- |
+| CIFAR10  | 4           | 64         | False               | True            | 0.091s                                | 0.003s              |
+| CIFAR10  | 4           | 128        | False               | True            | 0.160s                                | 0.006s              |
+| CIFAR10  | 1           | 256        | False               | True            | 0.285s                                | 0.012s              |
+| CIFAR10  | 4           | 256        | False               | True            | 0.283s                                | 0.012s              |
+| CIFAR10  | 8           | 256        | False               | True            | 0.294s                                | 0.023s              |
+| CIFAR10  | 16          | 256        | False               | True            | 0.313s                                | 0.045s              |
+| CIFAR10  | 32          | 256        | False               | True            | 0.364s                                | 0.095s              |
+| CIFAR10  | 32          | 256        | False               | False           | 0.360s                                | 0.090s              |
+| CIFAR10  | 32          | 256        | True                | False           | 0.363s                                | 0.091s              |
+| Place365 | 4           | 256        | False               | True            | 2.86s                                 | 0.912s              |
+| Place365 | 8           | 256        | False               | True            | 2.86s                                 | 0.912s              |
+
+We could see that relatively bigger batch size performs faster. Also, CPU workers could benefits load time. However, if CPU workers are more than two times of GPUs, performance becomes slow. Also, `cudnn.deterministic` and `cudnn.benchmark` affects little about performance.
 
 # Reference
 
