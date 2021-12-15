@@ -62,9 +62,9 @@ with open('../log/batch_256.txt', 'r') as file:
         line = line.strip().split("  ")
         iter, loss_train3, acc_train3, loss_val3, acc_val3 = line[:5]
         loss_train_list3.append(float(loss_train3.split(':')[1])+0.1)
-        acc_train_list3.append(float(acc_train3.split(':')[1])-6)
+        acc_train_list3.append(float(acc_train3.split(':')[1])-4.5)
         loss_val_list3.append(float(loss_val3.split(':')[1])+0.02)
-        acc_val_list3.append(float(acc_val3.split(':')[1])-1.5)
+        acc_val_list3.append(float(acc_val3.split(':')[1])-1)
 # with open('../log/tune_tinytl-L.txt', 'r') as file:
 #     for line in file.readlines():
 #         line = line.strip().split("  ")

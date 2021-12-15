@@ -46,7 +46,7 @@ If we assume that w_t ≈ w_{t+k} , which means that after each batch's backward
 | 128       | 1.2e-3                | 73.1%         |
 | 256       | 2.4e-3                | 73.7%         |
 
-![image-20211215215052481](./pic/image-20211215215052481.png)
+![image-20211215233138197](./pic/image-20211215233138197.png)
 
 We could conclud that smaller batch size has a more unstable curve, which relatively has
 
