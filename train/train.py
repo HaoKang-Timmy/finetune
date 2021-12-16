@@ -2,9 +2,8 @@ import argparse
 import os
 import random
 import warnings
-from torchvision.models import mobilenet
 from utils import train, validate, adjust_learning_rate, save_checkpoint, prepare_dataloader, LiteResidualModule
-from ofa.utils import replace_bn_with_gn, init_models
+from ofa.utils import replace_bn_with_gn, init_models,download_url
 import torch
 import torch.nn as nn
 import torch.nn.parallel
@@ -31,18 +30,18 @@ parser.add_argument('--a', '--arch', metavar='ARCH', default='mobilenet_v2',
                     help='model architecture: ' +
                     ' | '.join(model_names) +
                     ' (default: resnet18)')
-parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
+parser.add_argument('-j', '--workers', default=32, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
 parser.add_argument('--epochs', default=50, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('-b', '--batch-size', default=8, type=int,
+parser.add_argument('-b', '--batch-size', default=256, type=int,
                     metavar='N',
                     help='mini-batch size (default: 256), this is the total '
                          'batch size of all GPUs on the current node when '
                          'using Data Parallel or Distributed Data Parallel')
-parser.add_argument('--lr', '--learning-rate', default=3e-4, type=float,
+parser.add_argument('--lr', '--learning-rate', default=24e-4, type=float,
                     metavar='LR', help='initial learning rate', dest='lr')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M',
                     help='momentum')
@@ -146,6 +145,8 @@ def main_worker(gpu, ngpus_per_node, args):
             model.classifier[-1] = nn.Linear(1280, 10)
         elif args.dataset_type == 'CIFAR100':
             model.classifier[-1] = nn.Linear(1280, 100)
+        elif args.dataset_type == 'Place365':
+            model.classifier[-1] = nn.Linear(1280, 365)
     # still could just work on mobilenet_v2
 
     if args.proxy == True:
@@ -159,14 +160,16 @@ def main_worker(gpu, ngpus_per_node, args):
             model.classifier = LinearLayer(1280, 100, dropout_rate=0.2)
         classification_head.append(model.classifier)
         init_models(classification_head)
-
+        # init_file = download_url('https://hanlab.mit.edu/projects/tinyml/tinyTL/files/'
+        #                          'proxylessnas_mobile+lite_residual@imagenet@ws+gn', model_dir='~/.tinytl/')
+        # model.load_state_dict(torch.load(init_file, map_location='cpu')['state_dict'])
     if args.train_method == 'finetune':
         for param in model.parameters():
             param.requires_grad = False
         for param in model.classifier.parameters():
             param.requires_grad = True
-        optimizer = torch.optim.Adam(model.classifier.parameters(), args.lr,
-                                     weight_decay=args.weight_decay)
+        optimizer = torch.optim.SGD(model.classifier.parameters(), args.lr,
+                                     weight_decay=args.weight_decay,momentum = 0.9)
     elif args.train_method == 'low':
         classifier_map = list(map(id, model.classifier.parameters()))
         low_map = list(map(id, model.features[-5:]))
@@ -207,7 +210,7 @@ def main_worker(gpu, ngpus_per_node, args):
             param.requires_grad = False
         for name, param in model.named_parameters():
             if 'bias' in name:
-
+                
                 param.requires_grad = True
         for param in model.classifier.parameters():
             param.requires_grad = True
@@ -215,18 +218,21 @@ def main_worker(gpu, ngpus_per_node, args):
                                      weight_decay=args.weight_decay)
         # l2sp_op =l2sp(model.parameters(), lr=args.lr*0.5)
     elif args.train_method == 'norm+last':
-        # print(model)
+        #print(model)
         for param in model.parameters():
             param.requires_grad = False
         if args.proxy == True:
             for name, param in model.named_parameters():
+                print(name)
                 if 'bn' in name:
+                    print("bn")
                     param.requires_grad = True
                 if 'gn' in name:
                     param.requires_grad = True
-        elif args.a == 'mobilenet_v2':
+        else:
             for name, param in model.named_parameters():
-                if '0.1' or '1.1' in name:
+                if '0.1' or '1.1' or '3' in name:
+                    print(name)
                     param.requires_grad = True
         # for m in model.features:
         #     print(m)
@@ -234,7 +240,7 @@ def main_worker(gpu, ngpus_per_node, args):
             param.requires_grad = True
         optimizer = torch.optim.Adam(model.parameters(), args.lr,
                                      weight_decay=args.weight_decay)
-        replace_bn_with_gn(model, gn_channel_per_group=8)
+        # replace_bn_with_gn(model, gn_channel_per_group=8)
     if not torch.cuda.is_available():
         print('using CPU')
     elif args.distributed:
@@ -268,7 +274,7 @@ def main_worker(gpu, ngpus_per_node, args):
             writer = SummaryWriter()
 
     criterion = nn.CrossEntropyLoss().cuda(args.gpu)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=50)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=40)
     # optionally resume from a checkpoint
     if args.resume:
         if os.path.isfile(args.resume):
@@ -285,7 +291,7 @@ def main_worker(gpu, ngpus_per_node, args):
                 # best_acc1 may be from a checkpoint from a different GPU
                 best_acc1 = best_acc1.to(args.gpu)
             model.load_state_dict(checkpoint['state_dict'])
-            # optimizer.load_state_dict(checkpoint['optimizer'])
+            optimizer.load_state_dict(checkpoint['optimizer'])
             print("=> loaded checkpoint '{}' (epoch {})"
                   .format(args.resume, checkpoint['epoch']))
         else:
@@ -318,7 +324,7 @@ def main_worker(gpu, ngpus_per_node, args):
         if args.distributed:
             train_sampler.set_epoch(epoch)
 
-        acc1_train, loss_train = train(train_loader, model, criterion,
+        acc1_train, loss_train, time_train, time_load = train(train_loader, model, criterion,
                                        optimizer, epoch, args, ngpus_per_node)
         adjust_learning_rate(scheduler)
         acc1, loss_val = validate(
@@ -344,7 +350,7 @@ def main_worker(gpu, ngpus_per_node, args):
                 train_loss_save = './log/tune_last.txt'
                 file_save1 = open(train_loss_save, mode='a')
                 file_save1.write('\n'+'step:'+str(epoch)+'  loss_train:'+str(loss_train)+'  acc1_train:'+str(
-                    acc1_train.item())+'  loss_val:'+str(loss_val)+'  acc1_val:'+str(acc1.item()))
+                    acc1_train.item())+'  loss_val:'+str(loss_val)+'  acc1_val:'+str(acc1.item())+'  time_per_batch:'+str(time_train)+'  time_load_perbatch'+str(time_load))
                 print(scheduler.get_last_lr())
                 file_save1.close()
 
