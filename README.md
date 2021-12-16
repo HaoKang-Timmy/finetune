@@ -1,7 +1,3 @@
----
-typora-copy-images-to: ./pic
----
-
 # 1 Batchsize vs accuracy
 
 ## 1.1 Theory
@@ -22,33 +18,32 @@ If we assume that w_t ≈ w_{t+k} , which means that after each batch's backward
 
 ### 1.2.1 Settings
 
-| setting            | value                                 |
-| ------------------ | ------------------------------------- |
-| Pretrained dataset | Imagenet                              |
-| Dataset            | CIFAR10                               |
-| Epochs             | 50                                    |
-| Optimizer          | Adam                                  |
-| Momentum           | 0.9                                   |
-| Lr(initial)        | Scaling learning rate with batch size |
-| Scheduler          | CosineAnnealingLR                     |
-| Batch size         | 8 , 256                               |
-| Weight decay       | 1e-4                                  |
-| Distributed        | Yes                                   |
-| Backbone           | MobileNetV2                           |
-| Finetune strategy  | feature extractor                     |
+| setting            | value                                       |
+| ------------------ | ------------------------------------------- |
+| Pretrained dataset | Imagenet                                    |
+| Dataset            | CIFAR10                                     |
+| Epochs             | 50                                          |
+| Optimizer          | Adam                                        |
+| Lr(initial)        | Scaling learning rate with batch size       |
+| Scheduler          | CosineAnnealingLR                           |
+| Batch size         | 32,64,128,256                               |
+| Weight decay       | 1e-4                                        |
+| Distributed        | Yes                                         |
+| Backbone           | MobileNetV2                                 |
+| Finetune strategy  | feature extractor(only finetune last layer) |
 
  ### 1.2.2 Results
 
-| Batchsize | Initial learning rate | val_acc(top1) |
-| --------- | --------------------- | ------------- |
-| 32        | 3e-4                  | 71.2%         |
-| 64        | 6e-4                  | 75.1%         |
-| 128       | 1.2e-3                | 73.1%         |
-| 256       | 2.4e-3                | 73.7%         |
+| Batchsize | Initial learning rate(scaled) | val_acc(top1) |
+| --------- | ----------------------------- | ------------- |
+| 32        | 3e-4                          | 71.2%         |
+| 64        | 6e-4                          | 75.1%         |
+| 128       | 1.2e-3                        | 73.7%         |
+| 256       | 2.4e-3                        | 73.1%         |
 
 ![image-20211215233138197](./pic/image-20211215233138197.png)
 
-We could conclud that smaller batch size has a more unstable curve, which relatively has
+We could conclud that smaller batch size has a more unstable curve, which relatively has better accuracy. However, in small batch(8 pic per GPU), performance is worsen than others. This is because MobileNetV2 uses batchnorm_layer. In small batches, these layer has bad performance. Comparing 64, 128, 256, we get that small batches get relatively better performance than large batches.
 
 
 
@@ -72,19 +67,22 @@ Dataset = CIFAR10
 
 ### 1.2.2 Results
 
-| Dataset  | CPU workers | batch_size | cudnn.deterministic | cudnn.benchmark | train and load time per batch per GPU | load time per epoch |
-| -------- | ----------- | ---------- | ------------------- | --------------- | ------------------------------------- | ------------------- |
-| CIFAR10  | 4           | 64         | False               | True            | 0.091s                                | 0.003s              |
-| CIFAR10  | 4           | 128        | False               | True            | 0.160s                                | 0.006s              |
-| CIFAR10  | 1           | 256        | False               | True            | 0.285s                                | 0.012s              |
-| CIFAR10  | 4           | 256        | False               | True            | 0.283s                                | 0.012s              |
-| CIFAR10  | 8           | 256        | False               | True            | 0.294s                                | 0.023s              |
-| CIFAR10  | 16          | 256        | False               | True            | 0.313s                                | 0.045s              |
-| CIFAR10  | 32          | 256        | False               | True            | 0.364s                                | 0.095s              |
-| CIFAR10  | 32          | 256        | False               | False           | 0.360s                                | 0.090s              |
-| CIFAR10  | 32          | 256        | True                | False           | 0.363s                                | 0.091s              |
-| Place365 | 4           | 256        | False               | True            | 2.86s                                 | 0.912s              |
-| Place365 | 8           | 256        | False               | True            | 2.86s                                 | 0.912s              |
+| Dataset  | CPU workers | batch_size | cudnn.deterministic | cudnn.benchmark | train and load time per batch per GPU | load time per epoch | Initial loading time |
+| -------- | ----------- | ---------- | ------------------- | --------------- | ------------------------------------- | ------------------- | -------------------- |
+| CIFAR10  | 4           | 64         | False               | True            | 0.091s                                | 0.003s              |                      |
+| CIFAR10  | 4           | 128        | False               | True            | 0.160s                                | 0.006s              |                      |
+| CIFAR10  | 1           | 256        | False               | True            | 0.285s                                | 0.012s              |                      |
+| CIFAR10  | 4           | 256        | False               | True            | 0.283s                                | 0.012s              |                      |
+| CIFAR10  | 8           | 256        | False               | True            | 0.294s                                | 0.023s              |                      |
+| CIFAR10  | 16          | 256        | False               | True            | 0.313s                                | 0.045s              |                      |
+| CIFAR10  | 32          | 256        | False               | True            | 0.364s                                | 0.095s              |                      |
+| CIFAR10  | 32          | 256        | False               | False           | 0.360s                                | 0.090s              |                      |
+| CIFAR10  | 32          | 256        | True                | False           | 0.363s                                | 0.091s              |                      |
+| Place365 | 4           | 256        | False               | True            | 2.86s                                 | 0.912s              |                      |
+| Place365 | 8           | 256        | False               | True            | 2.21s                                 | 0.602s              |                      |
+| Place365 | 16          | 256        | False               | True            | 1.56s                                 | 0.394s              | 14.215s              |
+| Place365 | 32          | 256        | False               | True            | 0.300s                                | 0.016s              | 24.576s              |
+| Place365 | 32          | 256        | True                | False           | 0.290s                                | 0.016s              | 24.576s              |
 
 We could see that relatively bigger batch size performs faster. Also, CPU workers could benefits load time. However, if CPU workers are more than two times of GPUs, performance becomes slow. Also, `cudnn.deterministic` and `cudnn.benchmark` affects little about performance.
 

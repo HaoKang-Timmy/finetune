@@ -44,10 +44,10 @@ with open('../log/batch_64.txt', 'r') as file:
     for line in file.readlines():
         line = line.strip().split("  ")
         iter, loss_train1, acc_train1, loss_val1, acc_val1 = line[:5]
-        loss_train_list1.append(float(loss_train1.split(':')[1])-0.1)
-        acc_train_list1.append(float(acc_train1.split(':')[1])+4)
-        loss_val_list1.append(float(loss_val1.split(':')[1])-0.03)
-        acc_val_list1.append(float(acc_val1.split(':')[1])+2)
+        loss_train_list1.append(float(loss_train1.split(':')[1]))
+        acc_train_list1.append(float(acc_train1.split(':')[1]))
+        loss_val_list1.append(float(loss_val1.split(':')[1]))
+        acc_val_list1.append(float(acc_val1.split(':')[1]))
 
 with open('../log/batch_128.txt', 'r') as file:
     for line in file.readlines():
@@ -61,10 +61,10 @@ with open('../log/batch_256.txt', 'r') as file:
     for line in file.readlines():
         line = line.strip().split("  ")
         iter, loss_train3, acc_train3, loss_val3, acc_val3 = line[:5]
-        loss_train_list3.append(float(loss_train3.split(':')[1])+0.1)
-        acc_train_list3.append(float(acc_train3.split(':')[1])-4.5)
-        loss_val_list3.append(float(loss_val3.split(':')[1])+0.02)
-        acc_val_list3.append(float(acc_val3.split(':')[1])-1)
+        loss_train_list3.append(float(loss_train3.split(':')[1]))
+        acc_train_list3.append(float(acc_train3.split(':')[1]))
+        loss_val_list3.append(float(loss_val3.split(':')[1]))
+        acc_val_list3.append(float(acc_val3.split(':')[1]))
 # with open('../log/tune_tinytl-L.txt', 'r') as file:
 #     for line in file.readlines():
 #         line = line.strip().split("  ")
@@ -95,14 +95,14 @@ plt.ylabel('loss')
 ax2 = plt.subplot(2, 2, 2, frameon=True)
 plt.plot(iter_list, acc_train_list, '--', label="32")
 plt.plot(iter_list, acc_train_list1, '-.', label="64")
-plt.plot(iter_list, acc_train_list2, ':', label='128')
+plt.plot(iter_list, acc_train_list2, ':', label='FT-Norm+Last')
 plt.plot(iter_list, acc_train_list3, '--', label='256')
 # plt.plot(iter_list, acc_train_list4, '-.', label='TinyTL-L')
 # plt.plot(iter_list, acc_train_list5, ':', label='TinyTL-L+B')
 plt.title('training_acc(top1)')
 plt.xlabel('epochs')
 plt.ylabel('acc')
-plt.legend()
+# plt.legend()
 ax3 = plt.subplot(2, 2, 3, frameon=True)
 plt.plot(iter_list, loss_val_list, '--', label="32")
 plt.plot(iter_list, loss_val_list1, '-.', label="64")
