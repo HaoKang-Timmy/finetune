@@ -134,7 +134,7 @@ python train.py --a mobilenet_v2 --dist-url 'tcp://127.0.0.1:1234' --dist-backen
 
 ![image-20211216162033300](./pic/image-20211216162033300.png)
 
-Val_acc: 52.14%
+Val_acc: 51.44%
 
 # Reference
 
