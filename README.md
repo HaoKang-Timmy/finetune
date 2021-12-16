@@ -61,22 +61,6 @@ The other reason is that workers of data loader. Data are stored at disks. CPU m
 
 ### 1.2.1 Settings and Commands
 
-| setting            | value                                           |
-| ------------------ | ----------------------------------------------- |
-| Pretrained dataset | Imagenet                                        |
-| Dataset            | CIFAR10                                         |
-| Epochs             | 50                                              |
-| Optimizer          | Adam                                            |
-| Lr(initial)        | Scaling learning rate with batch size           |
-| Scheduler          | CosineAnnealingLR                               |
-| Batch size         | 32,64,128,256                                   |
-| Weight decay       | 1e-4                                            |
-| Distributed        | Yes                                             |
-| Backbone           | MobileNetV2                                     |
-| Finetune strategy  | feature extractor(only finetune the last layer) |
-
-
-
 | Backbone         | MobileNetV2           |
 | ---------------- | --------------------- |
 | Picture size     | 3\*224\*224           |
