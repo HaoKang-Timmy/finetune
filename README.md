@@ -16,7 +16,7 @@ If we assume that w_t ≈ w_{t+k} , which means that after each batch's backward
 
 ## 1.2 Main Results
 
-### 1.2.1 Settings
+### 1.2.1 Settings and Commands
 
 | setting            | value                                       |
 | ------------------ | ------------------------------------------- |
@@ -31,6 +31,8 @@ If we assume that w_t ≈ w_{t+k} , which means that after each batch's backward
 | Distributed        | Yes                                         |
 | Backbone           | MobileNetV2                                 |
 | Finetune strategy  | feature extractor(only finetune last layer) |
+
+Refer commands to `./train_scrpit`
 
  ### 1.2.2 Results
 
@@ -57,34 +59,82 @@ The other reason is that workers of data loader. Data are stored at disks. CPU m
 
 ## 1.2 Main Results
 
-### 1.2.1 Settings
+### 1.2.1 Settings and Commands
 
-Backbone = MobileNetV2
+| setting            | value                                       |
+| ------------------ | ------------------------------------------- |
+| Pretrained dataset | Imagenet                                    |
+| Dataset            | CIFAR10                                     |
+| Epochs             | 50                                          |
+| Optimizer          | Adam                                        |
+| Lr(initial)        | Scaling learning rate with batch size       |
+| Scheduler          | CosineAnnealingLR                           |
+| Batch size         | 32,64,128,256                               |
+| Weight decay       | 1e-4                                        |
+| Distributed        | Yes                                         |
+| Backbone           | MobileNetV2                                 |
+| Finetune strategy  | feature extractor(only finetune last layer) |
 
-Picture size = 3\*224\*224
 
-Dataset = CIFAR10
+
+| Backbone         | MobileNetV2           |
+| ---------------- | --------------------- |
+| Picture size     | 3\*224\*224           |
+| Dataset          | CIFAR10, Place365     |
+| Fintune Strategy | Finetune full network |
+
+Refer commands to `./train_scrpit`
 
 ### 1.2.2 Results
 
-| Dataset  | CPU workers | batch_size | cudnn.deterministic | cudnn.benchmark | train and load time per batch per GPU | load time per epoch | Initial loading time |
-| -------- | ----------- | ---------- | ------------------- | --------------- | ------------------------------------- | ------------------- | -------------------- |
-| CIFAR10  | 4           | 64         | False               | True            | 0.091s                                | 0.003s              |                      |
-| CIFAR10  | 4           | 128        | False               | True            | 0.160s                                | 0.006s              |                      |
-| CIFAR10  | 1           | 256        | False               | True            | 0.285s                                | 0.012s              |                      |
-| CIFAR10  | 4           | 256        | False               | True            | 0.283s                                | 0.012s              |                      |
-| CIFAR10  | 8           | 256        | False               | True            | 0.294s                                | 0.023s              |                      |
-| CIFAR10  | 16          | 256        | False               | True            | 0.313s                                | 0.045s              |                      |
-| CIFAR10  | 32          | 256        | False               | True            | 0.364s                                | 0.095s              |                      |
-| CIFAR10  | 32          | 256        | False               | False           | 0.360s                                | 0.090s              |                      |
-| CIFAR10  | 32          | 256        | True                | False           | 0.363s                                | 0.091s              |                      |
-| Place365 | 4           | 256        | False               | True            | 2.86s                                 | 0.912s              |                      |
-| Place365 | 8           | 256        | False               | True            | 2.21s                                 | 0.602s              |                      |
-| Place365 | 16          | 256        | False               | True            | 1.56s                                 | 0.394s              | 14.215s              |
-| Place365 | 32          | 256        | False               | True            | 0.300s                                | 0.016s              | 24.576s              |
-| Place365 | 32          | 256        | True                | False           | 0.290s                                | 0.016s              | 24.576s              |
+| Dataset  | CPU workers | batch_size | cudnn.deterministic | cudnn.benchmark | train and load time per batch per GPU | load time per epoch |
+| -------- | ----------- | ---------- | ------------------- | --------------- | ------------------------------------- | ------------------- |
+| CIFAR10  | 4           | 64         | False               | True            | 0.091s                                | 0.003s              |
+| CIFAR10  | 4           | 128        | False               | True            | 0.160s                                | 0.006s              |
+| CIFAR10  | 1           | 256        | False               | True            | 0.285s                                | 0.012s              |
+| CIFAR10  | 4           | 256        | False               | True            | 0.283s                                | 0.012s              |
+| CIFAR10  | 8           | 256        | False               | True            | 0.294s                                | 0.023s              |
+| CIFAR10  | 16          | 256        | False               | True            | 0.313s                                | 0.045s              |
+| CIFAR10  | 32          | 256        | False               | True            | 0.364s                                | 0.095s              |
+| CIFAR10  | 32          | 256        | False               | False           | 0.360s                                | 0.090s              |
+| CIFAR10  | 32          | 256        | True                | False           | 0.363s                                | 0.091s              |
+| Place365 | 4           | 256        | False               | True            | 2.86s                                 | 0.912s              |
+| Place365 | 8           | 256        | False               | True            | 2.21s                                 | 0.602s              |
+| Place365 | 16          | 256        | False               | True            | 1.56s                                 | 0.394s              |
+| Place365 | 32          | 256        | False               | True            | 1.12s                                 | 0.344s              |
+| Place365 | 32          | 256        | True                | False           | 1.68s                                 | 0.412s              |
 
-We could see that relatively bigger batch size performs faster. Also, CPU workers could benefits load time. However, if CPU workers are more than two times of GPUs, performance becomes slow. Also, `cudnn.deterministic` and `cudnn.benchmark` affects little about performance.
+We could see that relatively bigger batch size performs faster. Also, CPU workers could benefits load time. Also, `cudnn.deterministic` and `cudnn.benchmark` affects a lot about performance. In small datasets(such as CIFAR10), these elements affects little about performance speed. In large datasets, these affects a lot.
+
+# 3 Finetune Mobilenet with Place365
+
+## 3.1 Settings and Command
+
+| setting            | value                 |
+| ------------------ | --------------------- |
+| Pretrained dataset | Imagenet              |
+| Dataset            | Place365              |
+| Epochs             | 50                    |
+| Optimizer          | Adam                  |
+| Lr(initial)        | 5e-4                  |
+| Scheduler          | CosineAnnealingLR     |
+| Batch size         | 32,64,128,256         |
+| Weight decay       | 1e-4                  |
+| Distributed        | Yes                   |
+| Backbone           | MobileNetV2           |
+| Finetune strategy  | Finetune full network |
+
+Command:
+
+```
+python train.py --a mobilenet_v2 --dist-url 'tcp://127.0.0.1:1234' --dist-backend 'nccl' --multiprocessing-distributed --world-size 1 --rank 0 --tensorboard --train-method deep  -t Place365 --pretrained --seed 1 ./dataset
+```
+
+# 3.2 Result
+
+![image-20211216162033300](./pic/image-20211216162033300.png)
+
+Val_acc: 52.14%
 
 # Reference
 
