@@ -45,7 +45,7 @@ Refer commands to `./train_scrpit`
 
 ![image-20211215233138197](./pic/image-20211215233138197.png)
 
-We could conclud that smaller batch size has a more unstable curve, which relatively has better accuracy. However, in small batch(8 pic per GPU), performance is worsen than others. This is because MobileNetV2 uses batchnorm_layer. In small batches, these layer has bad performance. Comparing 64, 128, 256, we get that small batches get relatively better performance than large batches.
+We could conclude that a smaller batch size has a more unstable curve, which relatively has better accuracy. However, in the small-batch(8 pics per GPU), performance is worse than others. This is because MobileNetV2 uses batchnorm_layer. In small batches, these layer has bad performance. Comparing 64, 128, 256, we get that small batches to get relatively better performance than large batches.
 
 
 
@@ -61,19 +61,19 @@ The other reason is that workers of data loader. Data are stored at disks. CPU m
 
 ### 1.2.1 Settings and Commands
 
-| setting            | value                                       |
-| ------------------ | ------------------------------------------- |
-| Pretrained dataset | Imagenet                                    |
-| Dataset            | CIFAR10                                     |
-| Epochs             | 50                                          |
-| Optimizer          | Adam                                        |
-| Lr(initial)        | Scaling learning rate with batch size       |
-| Scheduler          | CosineAnnealingLR                           |
-| Batch size         | 32,64,128,256                               |
-| Weight decay       | 1e-4                                        |
-| Distributed        | Yes                                         |
-| Backbone           | MobileNetV2                                 |
-| Finetune strategy  | feature extractor(only finetune last layer) |
+| setting            | value                                           |
+| ------------------ | ----------------------------------------------- |
+| Pretrained dataset | Imagenet                                        |
+| Dataset            | CIFAR10                                         |
+| Epochs             | 50                                              |
+| Optimizer          | Adam                                            |
+| Lr(initial)        | Scaling learning rate with batch size           |
+| Scheduler          | CosineAnnealingLR                               |
+| Batch size         | 32,64,128,256                                   |
+| Weight decay       | 1e-4                                            |
+| Distributed        | Yes                                             |
+| Backbone           | MobileNetV2                                     |
+| Finetune strategy  | feature extractor(only finetune the last layer) |
 
 
 
@@ -104,7 +104,7 @@ Refer commands to `./train_scrpit`
 | Place365 | 32          | 256        | False               | True            | 1.12s                                 | 0.344s              |
 | Place365 | 32          | 256        | True                | False           | 1.68s                                 | 0.412s              |
 
-We could see that relatively bigger batch size performs faster. Also, CPU workers could benefits load time. Also, `cudnn.deterministic` and `cudnn.benchmark` affects a lot about performance. In small datasets(such as CIFAR10), these elements affects little about performance speed. In large datasets, these affects a lot.
+We could see that a relatively bigger batch size performs faster. Also, CPU workers could benefit from load time. Also, `cudnn.deterministic` and `cudnn.benchmark` affects a lot about performance. In small datasets(such as CIFAR10), these elements affect little about performance speed. In large datasets, these affect a lot.
 
 # 3 Finetune Mobilenet with Place365
 
