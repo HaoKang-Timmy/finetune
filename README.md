@@ -98,11 +98,11 @@ We could see that a relatively bigger batch size performs faster. Also, CPU work
 | ------------------ | --------------------- |
 | Pretrained dataset | Imagenet              |
 | Dataset            | Place365              |
-| Epochs             | 50                    |
+| Epochs             | 13                    |
 | Optimizer          | Adam                  |
 | Lr(initial)        | 5e-4                  |
 | Scheduler          | CosineAnnealingLR     |
-| Batch size         | 32,64,128,256         |
+| Batch size         | 256                   |
 | Weight decay       | 1e-4                  |
 | Distributed        | Yes                   |
 | Backbone           | MobileNetV2           |
