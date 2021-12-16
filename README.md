@@ -36,12 +36,12 @@ Refer commands to `./train_scrpit`
 
  ### 1.2.2 Results
 
-| Batchsize | Initial learning rate(scaled) | val_acc(top1) |
-| --------- | ----------------------------- | ------------- |
-| 32        | 3e-4                          | 71.2%         |
-| 64        | 6e-4                          | 75.1%         |
-| 128       | 1.2e-3                        | 73.7%         |
-| 256       | 2.4e-3                        | 73.1%         |
+| Batchsize(on 4 GPUs) | Initial learning rate(scaled) | val_acc(top1) |
+| -------------------- | ----------------------------- | ------------- |
+| 32                   | 3e-4                          | 71.2%         |
+| 64                   | 6e-4                          | 75.1%         |
+| 128                  | 1.2e-3                        | 73.7%         |
+| 256                  | 2.4e-3                        | 73.1%         |
 
 ![image-20211215233138197](./pic/image-20211215233138197.png)
 
@@ -88,7 +88,7 @@ Refer commands to `./train_scrpit`
 | Place365 | 32          | 256        | False               | True            | 1.12s                                 | 0.344s              |
 | Place365 | 32          | 256        | True                | False           | 1.68s                                 | 0.412s              |
 
-We could see that a relatively bigger batch size performs faster. Also, CPU workers could benefit from load time. Also, `cudnn.deterministic` and `cudnn.benchmark` affects a lot about performance. In small datasets(such as CIFAR10), these elements affect little about performance speed. In large datasets, these affect a lot.
+We could see that a relatively bigger batch size performs faster. Also, CPU workers could benefit load time. Also, `cudnn.deterministic` and `cudnn.benchmark` affects a lot about performance. In small datasets(such as CIFAR10), these elements affect little about performance speed. In large datasets, these affect a lot.
 
 # 3 Finetune Mobilenet with Place365
 
